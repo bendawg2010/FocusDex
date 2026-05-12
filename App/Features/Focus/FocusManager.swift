@@ -73,9 +73,26 @@ final class FocusManager: ObservableObject {
 
     func enterSafari() {
         guard phase == .focusing || phase == .idle || phase == .celebration else { return }
-        let n = max(2, min(5, Int(elapsed / 60 / 10) + 2))
+        // After-session: scale spawns to session length.
+        // From idle (free-play): always give a solid 4 to make the minigame worth it.
+        let n: Int
+        if elapsed == 0 {
+            n = 4
+        } else {
+            n = max(2, min(5, Int(elapsed / 60 / 10) + 2))
+        }
         pendingSpawns = (0..<n).compactMap { _ in Creature.starters.randomElement() }
         phase = .safari
+    }
+
+    /// One-time starter pack so the catch game is playable immediately, without
+    /// gating fun behind work. Granted when the user picks their starter.
+    func grantStarterPack() {
+        // Only top up if they're empty — keeps this safe to call multiple times.
+        if totalBalls == 0 {
+            pokeballs += 8
+            greatBalls += 2
+        }
     }
 
     func dismissSafari() {

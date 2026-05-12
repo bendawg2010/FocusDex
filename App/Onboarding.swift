@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @EnvironmentObject var dex: DexStore
+    @EnvironmentObject var focus: FocusManager
     @AppStorage(Persistence.Keys.hasChosenStarter) private var hasChosenStarter = false
     @AppStorage(Persistence.Keys.starterId) private var starterId = 0
     @State private var picked: Int? = nil
@@ -64,6 +65,7 @@ struct OnboardingView: View {
     private func choose(_ c: Creature) {
         starterId = c.id
         dex.catchCreature(c)
+        focus.grantStarterPack()
         burstID = UUID()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
             withAnimation { hasChosenStarter = true }

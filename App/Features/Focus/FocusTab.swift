@@ -73,7 +73,29 @@ private struct IdleView: View {
             .buttonStyle(PrimaryGradientButtonStyle())
             .keyboardShortcut("n", modifiers: .command)
             .padding(.horizontal, 16)
-            .padding(.bottom, 8)
+
+            // Free-play entry — the catch game isn't gated behind work.
+            Button(action: { focus.enterSafari() }) {
+                HStack(spacing: 6) {
+                    Image(systemName: "pawprint.fill")
+                    Text("Catch creatures")
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 10, weight: .heavy))
+                }
+                .font(.system(.subheadline, design: .rounded).weight(.heavy))
+                .foregroundStyle(Theme.mint)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity)
+                .background {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Theme.mint.opacity(0.10))
+                        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.mint.opacity(0.4), lineWidth: 1))
+                }
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut("g", modifiers: .command)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 10)
         }
     }
 }
