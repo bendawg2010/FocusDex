@@ -302,10 +302,30 @@ nav {
 .starter-art {
   aspect-ratio: 1;
   display: flex; align-items: center; justify-content: center;
-  font-size: 96px;
+  padding: 24px;
   background: linear-gradient(135deg, rgba(193, 71, 255, 0.1), rgba(71, 160, 255, 0.1));
   border-bottom: 1px solid var(--border);
   position: relative;
+  image-rendering: pixelated;
+}
+.starter-art svg {
+  filter: drop-shadow(0 6px 14px rgba(193, 71, 255, 0.5));
+  animation: floatBob 3s ease-in-out infinite;
+}
+
+.nav-demo {
+  background: linear-gradient(135deg, var(--pink), var(--magenta));
+  color: white !important;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12px;
+  box-shadow: 0 4px 12px rgba(193, 71, 255, 0.3);
+  transition: transform 200ms;
+}
+.nav-demo:hover {
+  transform: translateY(-1px);
+  color: white !important;
 }
 .starter-art[data-creature="codesprite"] { background: linear-gradient(135deg, rgba(46, 230, 160, 0.15), rgba(71, 160, 255, 0.1)); }
 .starter-art[data-creature="codesprite"] .creature-placeholder { color: var(--mint); }

@@ -482,10 +482,12 @@ private struct FloatingCreature: View {
 
     var body: some View {
         ZStack {
-            Text(emoji)
-                .font(.system(size: 48))
-                .foregroundStyle(typeColor)
-                .shadow(color: typeColor.opacity(0.6), radius: 14)
+            PixelArt(
+                grid: Sprites.forCreature(id: creature.id),
+                scale: 4,
+                glowColor: typeColor.opacity(0.7),
+                glowRadius: 14
+            )
                 .offset(x: baseX, y: baseY + bob)
                 .scaleEffect(caught ? 0 : (press ? 0.92 : 1))
                 .opacity(throwing && !caught ? 0.5 : 1)
@@ -573,16 +575,22 @@ private struct CatchRevealCard: View {
                 )
                 .kerning(2)
 
-                Text("⌬")
-                    .font(.system(size: 80))
-                    .foregroundStyle(Theme.mint)
-                    .shadow(color: Theme.mint.opacity(0.7), radius: 22)
-                    .scaleEffect(sparkle ? 1.05 : 1)
-                    .onAppear {
-                        withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
-                            sparkle.toggle()
-                        }
+                PixelArt(
+                    grid: Sprites.forCreature(id: creature.id),
+                    scale: 6,
+                    glowColor: Theme.mint.opacity(0.8),
+                    glowRadius: 22
+                )
+                .scaleEffect(sparkle ? 1.05 : 1)
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+                        sparkle.toggle()
                     }
+                }
+                HStack(spacing: 4) {
+                    TypePill(type: creature.primary)
+                    if let s = creature.secondary { TypePill(type: s) }
+                }
 
                 Text(creature.dexNumber)
                     .font(.system(.caption, design: .monospaced).weight(.bold))

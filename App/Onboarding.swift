@@ -81,13 +81,20 @@ private struct StarterRow: View {
             HStack(spacing: 14) {
                 ZStack {
                     Circle()
-                        .fill(typeColor.opacity(0.2))
+                        .fill(
+                            RadialGradient(
+                                colors: [typeColor.opacity(0.35), typeColor.opacity(0.05)],
+                                center: .center, startRadius: 0, endRadius: 32
+                            )
+                        )
                         .overlay(Circle().strokeBorder(typeColor.opacity(0.6), lineWidth: 1))
-                        .frame(width: 56, height: 56)
-                    Text(emoji)
-                        .font(.system(size: 30))
-                        .foregroundStyle(typeColor)
-                        .brandGlow(typeColor, radius: 10)
+                        .frame(width: 64, height: 64)
+                    PixelArt(
+                        grid: Sprites.forCreature(id: creature.id),
+                        scale: 2.6,
+                        glowColor: typeColor.opacity(0.7),
+                        glowRadius: 12
+                    )
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -99,9 +106,9 @@ private struct StarterRow: View {
                             .font(.system(.headline, design: .rounded).weight(.heavy))
                     }
                     HStack(spacing: 4) {
-                        TypeBadge(name: creature.primary.rawValue, color: typeColor)
+                        TypePill(type: creature.primary)
                         if let s = creature.secondary {
-                            TypeBadge(name: s.rawValue, color: secondaryColor)
+                            TypePill(type: s)
                         }
                     }
                     Text(creature.blurb)
@@ -138,36 +145,5 @@ private struct StarterRow: View {
         case .doc: return Theme.blue
         default: return Theme.magenta
         }
-    }
-    private var secondaryColor: Color {
-        guard let s = creature.secondary else { return Theme.magenta }
-        switch s {
-        case .spirit: return Theme.magenta
-        case .doc: return Theme.blue
-        case .pixel: return Theme.yellow
-        default: return Theme.magenta
-        }
-    }
-    private var emoji: String {
-        switch creature.id {
-        case 1: return "⌬"
-        case 4: return "✒︎"
-        case 7: return "✦"
-        default: return "✺"
-        }
-    }
-}
-
-private struct TypeBadge: View {
-    let name: String
-    let color: Color
-    var body: some View {
-        Text(name.uppercased())
-            .font(.system(size: 8, weight: .black, design: .rounded))
-            .kerning(0.8)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(color.opacity(0.25), in: Capsule())
-            .foregroundStyle(color)
     }
 }

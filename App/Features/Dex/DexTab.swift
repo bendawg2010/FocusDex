@@ -66,7 +66,7 @@ struct DexTab: View {
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 10) {
                         ForEach(filtered) { c in
-                            CreatureTile(creature: c)
+                            DexCellSprite(creature: c)
                         }
                     }
                     .padding(.horizontal, 16)

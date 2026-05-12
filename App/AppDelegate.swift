@@ -14,7 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            let symbol = NSImage(systemSymbolName: "sparkles", accessibilityDescription: "FocusDex")
+            let symbol = NSImage(systemSymbolName: "pawprint.fill", accessibilityDescription: "FocusDex")
             symbol?.isTemplate = true
             button.image = symbol
             button.imagePosition = .imageLeft
