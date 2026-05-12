@@ -1,0 +1,48 @@
+name: FocusDex
+options:
+  bundleIdPrefix: com.dryeetsolutions
+  deploymentTarget:
+    macOS: "13.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    PRODUCT_BUNDLE_IDENTIFIER: com.dryeetsolutions.FocusDex
+    SWIFT_VERSION: "5.9"
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+    ENABLE_HARDENED_RUNTIME: NO
+    INFOPLIST_KEY_LSUIElement: YES
+    GENERATE_INFOPLIST_FILE: YES
+    INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 FocusDex · MIT licensed · made by bendawg2010"
+
+targets:
+  FocusDex:
+    type: application
+    platform: macOS
+    sources:
+      - App
+    entitlements:
+      path: App/FocusDex.entitlements
+      properties:
+        com.apple.security.app-sandbox: false
+        com.apple.security.network.client: true
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSUIElement: YES
+        NSHumanReadableCopyright: "© 2026 FocusDex · MIT licensed"
+        # Sparkle settings (uncomment + populate SUPublicEDKey when ready)
+        # SUFeedURL: "https://focusdex.pages.dev/appcast.xml"
+        # SUEnableAutomaticChecks: YES
+        # SUScheduledCheckInterval: 14400
+        # SUAutomaticallyUpdate: NO
+        # SUPublicEDKey: "PASTE_GENERATED_KEY_HERE"
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

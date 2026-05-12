@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FocusDex — Catch creatures by focusing.</title>
+<meta name="description" content="A macOS productivity app with Pokémon-style mechanics. Focus on real work, earn Pokeballs, catch creatures on your breaks. Your Pokedex IS your year of work.">
+<meta property="og:title" content="FocusDex">
+<meta property="og:description" content="Catch creatures by focusing. The Animal Crossing of productivity.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- nav -->
+<nav>
+  <div class="nav-brand">
+    <span class="nav-logo">⚡</span>
+    <span class="nav-name">FocusDex</span>
+  </div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#dex">The Dex</a>
+    <a href="#starters">Starters</a>
+    <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</nav>
+
+<!-- hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="status-pill">
+      <span class="status-dot"></span> Coming soon · macOS · free + open source
+    </div>
+    <h1 class="hero-title">
+      <span class="grad-text">FocusDex</span>
+    </h1>
+    <p class="hero-tagline">
+      Catch creatures by <em>focusing</em>.<br>
+      The Animal Crossing of productivity.
+    </p>
+    <p class="hero-sub">
+      Focus on real work → earn Pokeballs. On your breaks, catch the creatures that
+      spawned during your session. Your Pokédex <strong>is</strong> your year of work.
+    </p>
+    <div class="hero-cta">
+      <a class="btn primary" href="https://github.com/bendawg2010/FocusDex/releases/latest"
+         data-download-trigger>↓ Download (Coming Soon)</a>
+      <a class="btn ghost" href="#how">How it works ↓</a>
+    </div>
+    <div class="hero-meta">
+      <span>★ MIT licensed</span>
+      <span>·</span>
+      <span>♥ free forever</span>
+      <span>·</span>
+      <span>🪶 made by <a href="https://github.com/bendawg2010" target="_blank" rel="noopener">bendawg2010</a></span>
+    </div>
+  </div>
+</section>
+
+<!-- the loop -->
+<section id="how" class="section">
+  <h2 class="section-title">The Core Loop</h2>
+  <p class="section-lead">It's stupidly simple. Focus → earn balls → catch on break.</p>
+  <div class="loop-grid">
+    <div class="loop-card">
+      <div class="loop-num">1</div>
+      <h3>Focus</h3>
+      <p>Hit start. Notchy watches you work. Every 5 minutes of uninterrupted focus = <strong>1 Pokeball</strong>. 25 min = a <strong>Great Ball</strong>. 90 min = an <strong>Ultra Ball</strong>. 8h day = a <strong>Master Ball</strong>.</p>
+    </div>
+    <div class="loop-card">
+      <div class="loop-num">2</div>
+      <h3>Spawn</h3>
+      <p>While you focus, creatures appear in the world around you — shaped by <strong>time of day</strong>, which <strong>app you're in</strong>, the <strong>weather</strong>, even your <strong>streak</strong>. Some only appear during a real eclipse.</p>
+    </div>
+    <div class="loop-card">
+      <div class="loop-num">3</div>
+      <h3>Catch</h3>
+      <p>Break time. Open Safari Mode. Your stockpile of balls. The creatures that spawned. <strong>Go.</strong> Long focus = better odds. Catch them, name them, level them.</p>
+    </div>
+    <div class="loop-card">
+      <div class="loop-num">4</div>
+      <h3>Battle. Trade. Brag.</h3>
+      <p>Friday Tournaments. Co-op Raids. Trade share codes. Become a Gym Leader. Year-end Wrapped. Your Pokédex IS your year of work.</p>
+    </div>
+  </div>
+</section>
+
+<!-- starters -->
+<section id="starters" class="section section-alt">
+  <h2 class="section-title">Pick Your Starter</h2>
+  <p class="section-lead">Three lines. Pick one, stick with it the whole year.</p>
+  <div class="starter-grid">
+    <div class="starter-card">
+      <div class="starter-art" data-creature="codesprite">
+        <span class="creature-placeholder">⌬</span>
+      </div>
+      <div class="starter-info">
+        <div class="dex-num">#001</div>
+        <h3>Codesprite</h3>
+        <div class="type-row">
+          <span class="type-badge type-code">Code</span>
+          <span class="type-badge type-spirit">Spirit</span>
+        </div>
+        <p>Awarded to those who first focus in a code editor. A small mint-glow spirit, eyes blink like a text cursor. Evolves into <strong>Codetitan</strong>.</p>
+      </div>
+    </div>
+
+    <div class="starter-card">
+      <div class="starter-art" data-creature="inkling">
+        <span class="creature-placeholder">✒︎</span>
+      </div>
+      <div class="starter-info">
+        <div class="dex-num">#004</div>
+        <h3>Inkling</h3>
+        <div class="type-row">
+          <span class="type-badge type-art">Art</span>
+          <span class="type-badge type-doc">Doc</span>
+        </div>
+        <p>For writers. An octopus-quill, body is a fluid ink droplet, one pearl eye. Evolves into <strong>Inkdragoon</strong>.</p>
+      </div>
+    </div>
+
+    <div class="starter-card">
+      <div class="starter-art" data-creature="pixibrush">
+        <span class="creature-placeholder">✦</span>
+      </div>
+      <div class="starter-info">
+        <div class="dex-num">#007</div>
+        <h3>Pixibrush</h3>
+        <div class="type-row">
+          <span class="type-badge type-art">Art</span>
+          <span class="type-badge type-pixel">Pixel</span>
+        </div>
+        <p>For designers. A paintbrush-fairy with color-swatch wings. Leaves fading trails of pigment. Evolves into <strong>Maestrix</strong>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- spawn conditions -->
+<section class="section">
+  <h2 class="section-title">Spawn Conditions</h2>
+  <p class="section-lead">What you do shapes what shows up. Real-world variables, real consequences.</p>
+  <div class="spawn-grid">
+    <div class="spawn-tile"><span class="spawn-emoji">🌅</span><h4>Time of Day</h4><p>Dawn types at sunrise. Insomniacs only between 2–5am.</p></div>
+    <div class="spawn-tile"><span class="spawn-emoji">💻</span><h4>App Context</h4><p>Xcode spawns Code-types. Figma spawns Art-types. Terminal hides rare Glitch-types.</p></div>
+    <div class="spawn-tile"><span class="spawn-emoji">🌧️</span><h4>Real Weather</h4><p>Storm-types when it's raining at <em>your</em> location.</p></div>
+    <div class="spawn-tile"><span class="spawn-emoji">🌙</span><h4>Sleep Data</h4><p>Dream-types delivered while you sleep. Apple Health integrated.</p></div>
+    <div class="spawn-tile"><span class="spawn-emoji">📅</span><h4>Calendar</h4><p>Meeting-types from real events. Skipped meetings = rebel-types.</p></div>
+    <div class="spawn-tile"><span class="spawn-emoji">🍕</span><h4>Lunch Hour</h4><p>Food-types only between 11–1pm. Caffeine line at coffee shops.</p></div>
+    <div class="spawn-tile"><span class="spawn-emoji">🌍</span><h4>Location</h4><p>Regional exclusives. Tokyo-only. SF-only. Travel to catch them all.</p></div>
+    <div class="spawn-tile"><span class="spawn-emoji">🌒</span><h4>Astronomical Events</h4><p>Solar eclipses, meteor showers, supermoons — once-a-decade Legendaries.</p></div>
+    <div class="spawn-tile"><span class="spawn-emoji">🔥</span><h4>Streaks</h4><p>Week-long streak = guaranteed Shiny. 365 days = mythical.</p></div>
+    <div class="spawn-tile"><span class="spawn-emoji">📵</span><h4>Distraction</h4><p>Doomscroll too long? The Brain Rot family appears. Charming. Cursed. Yours forever.</p></div>
+    <div class="spawn-tile"><span class="spawn-emoji">🎉</span><h4>Holidays</h4><p>Halloween-only ghosts. Birthday creatures only YOU ever see.</p></div>
+    <div class="spawn-tile"><span class="spawn-emoji">🤝</span><h4>Friends</h4><p>Co-focus with friends → bonus creatures. Trade for regional exclusives.</p></div>
+  </div>
+</section>
+
+<!-- the dex -->
+<section id="dex" class="section section-alt">
+  <h2 class="section-title">Your Year, in 150 Creatures</h2>
+  <p class="section-lead">Every entry has the date caught and the project you were focused on. The Dex is the diary.</p>
+  <div class="dex-stats">
+    <div class="dex-stat"><span class="stat-num">150+</span><span class="stat-label">creatures</span></div>
+    <div class="dex-stat"><span class="stat-num">15</span><span class="stat-label">types</span></div>
+    <div class="dex-stat"><span class="stat-num">12</span><span class="stat-label">legendaries</span></div>
+    <div class="dex-stat"><span class="stat-num">8</span><span class="stat-label">mythicals</span></div>
+    <div class="dex-stat"><span class="stat-num">365</span><span class="stat-label">days of stories</span></div>
+  </div>
+</section>
+
+<!-- notchy as professor -->
+<section class="section notchy-section">
+  <div class="notchy-row">
+    <div class="notchy-art">
+      <div class="notch-mock">
+        <div class="notch-shape">
+          <span class="notchy-emoji">●︎</span>
+        </div>
+      </div>
+    </div>
+    <div class="notchy-info">
+      <h2>Notchy lives in your notch.</h2>
+      <p>Your Professor Oak. Hands you your starter. Gives you quests. Cheers you on. Glances at you, concerned, when you start slipping.</p>
+      <p>The MacBook notch was always supposed to be a window into another world. Now it is.</p>
+    </div>
+  </div>
+</section>
+
+<!-- cta -->
+<section class="section cta-section">
+  <h2 class="section-title">It's not out yet.</h2>
+  <p class="section-lead">FocusDex is in development. Star the repo to get notified when v1.0 drops.</p>
+  <div class="cta-row">
+    <a class="btn primary" href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">⭐ Star on GitHub</a>
+    <a class="btn ghost" href="https://cash.app/$Dryeetsolutions" target="_blank" rel="noopener" class="cashapp-pill">💸 Tip jar</a>
+  </div>
+</section>
+
+<!-- download gate modal -->
+<div id="dlGate" class="dl-gate" hidden role="dialog" aria-modal="true" aria-labelledby="dlGateTitle">
+  <div class="dl-gate-card">
+    <button class="dl-gate-close" id="dlGateClose" aria-label="Close">×</button>
+    <div class="dl-gate-icon">⚠️</div>
+    <h2 class="dl-gate-title" id="dlGateTitle">FocusDex isn't out yet.</h2>
+    <p class="dl-gate-lead">
+      <strong>Free + open source · MIT licensed.</strong>
+      The macOS app is still in development. You can star the GitHub repo
+      to be notified the moment v1.0 drops — or tip Ben to fuel late-night
+      coding sessions (and spawn rare Insomnix's in his dex 🌙).
+    </p>
+    <ol>
+      <li>Star <strong>github.com/bendawg2010/FocusDex</strong></li>
+      <li>Get a notification when v1.0 ships</li>
+      <li>Download → macOS may say "can't be opened" (no $99/yr Apple Dev cert)</li>
+      <li><strong>System Settings → Privacy &amp; Security</strong> → <strong>Open Anyway</strong></li>
+      <li>You only do this once. Catch them all.</li>
+    </ol>
+    <p class="dl-gate-note">Sparkle handles future updates automatically.</p>
+    <a id="dlGateConfirm" class="btn primary dl-gate-btn" href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener" data-locked="true">
+      <span class="dl-gate-btn-text">Read above first…</span>
+    </a>
+    <div class="dl-gate-tip-row">
+      <a href="https://cash.app/$Dryeetsolutions" target="_blank" rel="noopener" class="cashapp">💸 Tip $Dryeetsolutions</a>
+      <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">⭐ Star on GitHub</a>
+      <a href="https://github.com/sponsors/bendawg2010" target="_blank" rel="noopener">❤️ Sponsor</a>
+    </div>
+  </div>
+</div>
+
+<!-- footer -->
+<footer>
+  <div class="footer-main">
+    <span>© FocusDex · MIT licensed · <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">open source</a></span>
+  </div>
+  <div class="footer-tip">
+    <a href="https://cash.app/$Dryeetsolutions" target="_blank" rel="noopener" class="cashapp">💸 Tip $Dryeetsolutions on Cash App</a>
+    <a href="https://github.com/sponsors/bendawg2010" target="_blank" rel="noopener">Sponsor</a>
+  </div>
+  <div class="footer-fam">
+    <span class="fam-label">Notchyverse fam:</span>
+    <a href="#" target="_blank" rel="noopener">NotchPop</a> ·
+    <a href="#" target="_blank" rel="noopener">WallPop</a> ·
+    <a href="#" target="_blank" rel="noopener">Boulder</a> ·
+    <a href="#" target="_blank" rel="noopener">SkyJournal</a> ·
+    <a href="#" target="_blank" rel="noopener">Campfire</a>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

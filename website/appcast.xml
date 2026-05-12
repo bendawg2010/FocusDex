@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>FocusDex — Sparkle Updates</title>
+    <description>Auto-update feed for FocusDex.</description>
+    <language>en</language>
+    <link>https://focusdex.pages.dev/</link>
+    <!-- v1.0 has not shipped yet. When it does, release.sh appends a new <item> here. -->
+  </channel>
+</rss>
