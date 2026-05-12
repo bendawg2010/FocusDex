@@ -1,0 +1,173 @@
+import SwiftUI
+
+struct OnboardingView: View {
+    @EnvironmentObject var dex: DexStore
+    @AppStorage(Persistence.Keys.hasChosenStarter) private var hasChosenStarter = false
+    @AppStorage(Persistence.Keys.starterId) private var starterId = 0
+    @State private var picked: Int? = nil
+    @State private var burstID = UUID()
+
+    var body: some View {
+        ZStack {
+            OrbBackground()
+
+            VStack(spacing: 12) {
+                Spacer(minLength: 12)
+
+                Text("⌬")
+                    .font(.system(size: 40))
+                    .foregroundStyle(Theme.magenta)
+                    .brandGlow(Theme.magenta, radius: 16)
+
+                AnimatedGradientText(
+                    text: "Welcome, trainer.",
+                    font: .system(size: 22, weight: .black, design: .rounded)
+                )
+
+                Text("Pick your starter — your partner for the year.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 28)
+
+                VStack(spacing: 10) {
+                    ForEach(Creature.starters) { c in
+                        StarterRow(creature: c, picked: picked == c.id) {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                picked = c.id
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                choose(c)
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 6)
+
+                Spacer()
+
+                Text("— Professor Notchy")
+                    .font(.caption2.italic())
+                    .foregroundStyle(.secondary)
+                    .padding(.bottom, 14)
+            }
+
+            if picked != nil {
+                ConfettiBurst(burstID: burstID, count: 80)
+                    .allowsHitTesting(false)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func choose(_ c: Creature) {
+        starterId = c.id
+        dex.catchCreature(c)
+        burstID = UUID()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+            withAnimation { hasChosenStarter = true }
+        }
+    }
+}
+
+private struct StarterRow: View {
+    let creature: Creature
+    let picked: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(typeColor.opacity(0.2))
+                        .overlay(Circle().strokeBorder(typeColor.opacity(0.6), lineWidth: 1))
+                        .frame(width: 56, height: 56)
+                    Text(emoji)
+                        .font(.system(size: 30))
+                        .foregroundStyle(typeColor)
+                        .brandGlow(typeColor, radius: 10)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text(creature.dexNumber)
+                            .font(.caption2.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                        Text(creature.name)
+                            .font(.system(.headline, design: .rounded).weight(.heavy))
+                    }
+                    HStack(spacing: 4) {
+                        TypeBadge(name: creature.primary.rawValue, color: typeColor)
+                        if let s = creature.secondary {
+                            TypeBadge(name: s.rawValue, color: secondaryColor)
+                        }
+                    }
+                    Text(creature.blurb)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: picked ? "checkmark.circle.fill" : "chevron.right")
+                    .font(.system(size: 16))
+                    .foregroundStyle(picked ? Theme.mint : Color.secondary.opacity(0.6))
+            }
+            .padding(10)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.white.opacity(picked ? 0.10 : 0.05))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .strokeBorder(picked ? typeColor.opacity(0.7) : Color.white.opacity(0.1), lineWidth: 1)
+                    )
+            )
+            .scaleEffect(picked ? 1.02 : 1)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var typeColor: Color {
+        switch creature.primary {
+        case .code: return Theme.mint
+        case .art: return Theme.pink
+        case .pixel: return Theme.yellow
+        case .doc: return Theme.blue
+        default: return Theme.magenta
+        }
+    }
+    private var secondaryColor: Color {
+        guard let s = creature.secondary else { return Theme.magenta }
+        switch s {
+        case .spirit: return Theme.magenta
+        case .doc: return Theme.blue
+        case .pixel: return Theme.yellow
+        default: return Theme.magenta
+        }
+    }
+    private var emoji: String {
+        switch creature.id {
+        case 1: return "⌬"
+        case 4: return "✒︎"
+        case 7: return "✦"
+        default: return "✺"
+        }
+    }
+}
+
+private struct TypeBadge: View {
+    let name: String
+    let color: Color
+    var body: some View {
+        Text(name.uppercased())
+            .font(.system(size: 8, weight: .black, design: .rounded))
+            .kerning(0.8)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.25), in: Capsule())
+            .foregroundStyle(color)
+    }
+}

@@ -11,7 +11,7 @@ struct FocusTab: View {
             case .safari:   SafariView()
             }
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: focus.phase)
+        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: focus.phase)
     }
 }
 
@@ -20,13 +20,12 @@ struct FocusTab: View {
 private struct IdleView: View {
     @EnvironmentObject var focus: FocusManager
     @State private var customMinutes: Double = 25
-    @State private var hoverChip: TimeInterval? = nil
 
     var body: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: 16) {
             Spacer(minLength: 4)
 
-            VStack(spacing: 6) {
+            VStack(spacing: 4) {
                 Text("Ready to focus?")
                     .font(.system(.title3, design: .rounded).weight(.heavy))
                 Text("Pick a duration. Catch what you spawn.")
@@ -43,7 +42,7 @@ private struct IdleView: View {
                 }
             }
 
-            VStack(spacing: 6) {
+            VStack(spacing: 4) {
                 HStack {
                     Text("Custom").font(.caption.weight(.semibold))
                     Spacer()
@@ -101,7 +100,7 @@ private struct DurationChip: View {
                     .strokeBorder(selected ? Color.white.opacity(0.25) : Color.white.opacity(0.08), lineWidth: 1)
             )
             .foregroundStyle(selected ? .white : .primary)
-            .shadow(color: selected ? Theme.magenta.opacity(0.4) : .clear, radius: 10, y: 4)
+            .shadow(color: selected ? Theme.magenta.opacity(0.5) : .clear, radius: 12, y: 4)
             .scaleEffect(selected ? 1.03 : 1)
         }
         .buttonStyle(.plain)
@@ -113,10 +112,10 @@ private struct BallStockpileRow: View {
     @EnvironmentObject var focus: FocusManager
     var body: some View {
         HStack(spacing: 8) {
-            BallStat(count: focus.pokeballs, color: Theme.mint)
-            BallStat(count: focus.greatBalls, color: Theme.blue)
-            BallStat(count: focus.ultraBalls, color: Theme.yellow)
-            BallStat(count: focus.masterBalls, color: Theme.magenta)
+            BallStat(count: focus.pokeballs, label: "Focus", color: Theme.mint)
+            BallStat(count: focus.greatBalls, label: "Great", color: Theme.blue)
+            BallStat(count: focus.ultraBalls, label: "Ultra", color: Theme.yellow)
+            BallStat(count: focus.masterBalls, label: "Master", color: Theme.magenta)
         }
         .padding(.horizontal, 16)
     }
@@ -124,24 +123,28 @@ private struct BallStockpileRow: View {
 
 private struct BallStat: View {
     let count: Int
+    let label: String
     let color: Color
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 4) {
             Circle()
                 .fill(color.gradient)
-                .frame(width: 14, height: 14)
+                .frame(width: 16, height: 16)
                 .overlay(Circle().strokeBorder(.white.opacity(0.4), lineWidth: 1))
                 .shadow(color: color.opacity(0.5), radius: 6)
             Text("\(count)")
                 .font(.system(.subheadline, design: .rounded).weight(.heavy))
                 .monospacedDigit()
                 .foregroundStyle(.white)
+            Text(label)
+                .font(.system(size: 8, weight: .heavy, design: .rounded))
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
-        .background(color.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(color.opacity(0.3), lineWidth: 0.5))
+        .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(color.opacity(0.25), lineWidth: 0.5))
     }
 }
 
@@ -153,30 +156,29 @@ private struct SessionView: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            Spacer(minLength: 4)
+            Spacer(minLength: 6)
 
-            // Glowing countdown
             ZStack {
                 Circle()
-                    .stroke(Color.white.opacity(0.06), lineWidth: 8)
-                    .frame(width: 200, height: 200)
+                    .stroke(Color.white.opacity(0.07), lineWidth: 10)
+                    .frame(width: 210, height: 210)
                 Circle()
                     .trim(from: 0, to: focus.plannedDuration > 0 ? CGFloat(focus.elapsed / focus.plannedDuration) : 0)
-                    .stroke(Theme.focusGradient, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                    .frame(width: 200, height: 200)
+                    .stroke(Theme.focusGradient, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                    .frame(width: 210, height: 210)
                     .rotationEffect(.degrees(-90))
                     .animation(.linear(duration: 0.4), value: focus.elapsed)
-                    .shadow(color: Theme.mint.opacity(0.6), radius: 10)
+                    .shadow(color: Theme.mint.opacity(0.6), radius: 14)
 
-                VStack(spacing: 2) {
+                VStack(spacing: 4) {
                     Text(focus.formattedRemaining)
-                        .font(.system(size: 44, weight: .black, design: .rounded))
+                        .font(.system(size: 46, weight: .black, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(.white)
                     Text("focusing")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(.secondary)
-                        .opacity(pulse ? 1 : 0.5)
+                        .kerning(2)
+                        .foregroundStyle(Theme.mint.opacity(pulse ? 1 : 0.5))
                 }
             }
             .onAppear {
@@ -184,7 +186,7 @@ private struct SessionView: View {
             }
 
             BallStockpileRow()
-                .padding(.top, 4)
+                .padding(.top, 6)
 
             Spacer()
 
@@ -204,16 +206,21 @@ private struct SessionView: View {
 private struct SafariView: View {
     @EnvironmentObject var focus: FocusManager
     @EnvironmentObject var dex: DexStore
-    @State private var caught: [Int: Bool] = [:]   // dexId -> caught (true) or ran away (false)
+    @State private var caught: [Int: Bool] = [:]
     @State private var throwing: Int? = nil
     @State private var revealCard: Creature? = nil
+    @State private var confettiID = UUID()
+    @State private var showConfetti = false
 
     var body: some View {
         ZStack {
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 HStack {
-                    AnimatedGradientText(text: "SAFARI MODE", font: .system(size: 14, weight: .black, design: .rounded))
-                        .kerning(1.5)
+                    AnimatedGradientText(
+                        text: "SAFARI MODE",
+                        font: .system(size: 13, weight: .black, design: .rounded)
+                    )
+                    .kerning(2)
                     Spacer()
                     Button(action: { focus.dismissSafari() }) {
                         Image(systemName: "xmark.circle.fill")
@@ -221,15 +228,15 @@ private struct SafariView: View {
                     }
                     .buttonStyle(.plain)
                 }
-                .padding(.horizontal, 16).padding(.top, 10)
+                .padding(.horizontal, 16).padding(.top, 8)
 
-                Text("Tap a creature to throw a ball.")
-                    .font(.caption).foregroundStyle(.secondary)
+                Text("Tap a creature to throw your best ball.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
 
                 ZStack {
-                    // Floating creatures
-                    ForEach(Array(focus.pendingSpawns.enumerated()), id: \.offset) { (i, creature) in
-                        if caught[creature.id] == nil || caught[creature.id] == true {
+                    ForEach(Array(focus.pendingSpawns.enumerated()), id: \.offset) { i, creature in
+                        if caught[creature.id] != false {
                             FloatingCreature(
                                 creature: creature,
                                 index: i,
@@ -239,7 +246,6 @@ private struct SafariView: View {
                             )
                         }
                     }
-                    // Ran-away marker
                     ForEach(focus.pendingSpawns, id: \.id) { c in
                         if caught[c.id] == false {
                             Text("💨 \(c.name) got away")
@@ -252,15 +258,17 @@ private struct SafariView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 Spacer()
-
-                BallStockpileRow()
-                    .padding(.bottom, 10)
+                BallStockpileRow().padding(.bottom, 10)
             }
 
-            // Reveal card overlay
+            if showConfetti {
+                ConfettiBurst(burstID: confettiID, count: 70)
+                    .allowsHitTesting(false)
+            }
+
             if let rev = revealCard {
                 CatchRevealCard(creature: rev) {
-                    revealCard = nil
+                    withAnimation(.spring()) { revealCard = nil }
                 }
                 .transition(.scale.combined(with: .opacity))
                 .zIndex(20)
@@ -271,7 +279,6 @@ private struct SafariView: View {
     private func attemptCatch(_ creature: Creature) {
         guard caught[creature.id] == nil else { return }
 
-        // Pick best-available ball tier.
         let tier: FocusManager.BallTier = {
             if focus.masterBalls > 0 { return .master }
             if focus.ultraBalls > 0 { return .ultra }
@@ -279,16 +286,24 @@ private struct SafariView: View {
             return .pokeball
         }()
 
-        guard focus.pokeballs + focus.greatBalls + focus.ultraBalls + focus.masterBalls > 0 else { return }
+        guard focus.totalBalls > 0 else { return }
 
         throwing = creature.id
         let success = focus.attemptCatch(creature, with: tier)
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
             throwing = nil
             caught[creature.id] = success
             if success {
                 dex.catchCreature(creature)
-                withAnimation(.spring()) { revealCard = creature }
+                confettiID = UUID()
+                showConfetti = true
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                    revealCard = creature
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                    showConfetti = false
+                }
             }
         }
     }
@@ -304,42 +319,27 @@ private struct FloatingCreature: View {
     @State private var bob: CGFloat = 0
     @State private var ballY: CGFloat = 400
     @State private var wobble: CGFloat = 0
-    @State private var caughtScale: CGFloat = 1
 
-    private var baseX: CGFloat { CGFloat(index % 3) * 110 - 110 }
-    private var baseY: CGFloat { CGFloat(index / 3) * 90 - 40 }
-
-    private var emoji: String {
-        switch creature.primary {
-        case .code: return "⌬"
-        case .art:  return "✒︎"
-        case .pixel: return "✦"
-        case .doc:  return "📄"
-        case .sound: return "♫"
-        case .sun:  return "☀︎"
-        case .moon: return "☾"
-        case .dream: return "☁︎"
-        case .caffeine: return "☕"
-        case .glitch: return "▒"
-        case .storm: return "⚡"
-        case .spirit: return "❂"
-        default: return "✶"
-        }
+    private var baseX: CGFloat {
+        let columns: CGFloat = 3
+        let col = CGFloat(index % Int(columns))
+        return (col - (columns - 1) / 2) * 110
     }
+    private var baseY: CGFloat { CGFloat(index / 3) * 90 - 40 }
 
     var body: some View {
         ZStack {
             Text(emoji)
                 .font(.system(size: 48))
                 .foregroundStyle(typeColor)
-                .shadow(color: typeColor.opacity(0.5), radius: 12)
+                .shadow(color: typeColor.opacity(0.6), radius: 14)
                 .offset(x: baseX, y: baseY + bob)
-                .scaleEffect(caught ? 0 : caughtScale)
+                .scaleEffect(caught ? 0 : 1)
                 .opacity(throwing && !caught ? 0.5 : 1)
                 .onTapGesture(perform: onTap)
                 .onAppear {
                     withAnimation(.easeInOut(duration: 2 + Double(index % 3) * 0.3).repeatForever(autoreverses: true)) {
-                        bob = -8
+                        bob = -10
                     }
                 }
 
@@ -350,7 +350,7 @@ private struct FloatingCreature: View {
                     .overlay(Circle().strokeBorder(.white, lineWidth: 1))
                     .offset(x: baseX + wobble, y: ballY)
                     .onAppear {
-                        withAnimation(.timingCurve(0.4, 0, 0.6, 1, duration: 0.4)) {
+                        withAnimation(.timingCurve(0.3, 0.0, 0.6, 1.0, duration: 0.4)) {
                             ballY = baseY
                         }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
@@ -380,9 +380,25 @@ private struct FloatingCreature: View {
         default: return Theme.mint
         }
     }
-}
 
-// MARK: - Catch reveal card
+    private var emoji: String {
+        switch creature.primary {
+        case .code: return "⌬"
+        case .art:  return "✒︎"
+        case .pixel: return "✦"
+        case .doc:  return "📄"
+        case .sound: return "♫"
+        case .sun:  return "☀︎"
+        case .moon: return "☾"
+        case .dream: return "☁︎"
+        case .caffeine: return "☕"
+        case .glitch: return "▒"
+        case .storm: return "⚡"
+        case .spirit: return "❂"
+        default: return "✶"
+        }
+    }
+}
 
 private struct CatchRevealCard: View {
     let creature: Creature
@@ -391,19 +407,20 @@ private struct CatchRevealCard: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.6).ignoresSafeArea()
+            Color.black.opacity(0.65).ignoresSafeArea()
                 .onTapGesture(perform: onDismiss)
 
             VStack(spacing: 10) {
-                Text("✨ CAUGHT ✨")
-                    .font(.system(size: 12, weight: .black, design: .rounded))
-                    .kerning(2)
-                    .foregroundStyle(Theme.yellow)
+                AnimatedGradientText(
+                    text: "✨ CAUGHT ✨",
+                    font: .system(size: 13, weight: .black, design: .rounded)
+                )
+                .kerning(2)
 
                 Text("⌬")
                     .font(.system(size: 80))
                     .foregroundStyle(Theme.mint)
-                    .shadow(color: Theme.mint.opacity(0.6), radius: 20)
+                    .shadow(color: Theme.mint.opacity(0.7), radius: 22)
                     .scaleEffect(sparkle ? 1.05 : 1)
                     .onAppear {
                         withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
@@ -429,7 +446,7 @@ private struct CatchRevealCard: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 14)
 
-                Button("Nice") { onDismiss() }
+                Button("Nice", action: onDismiss)
                     .buttonStyle(PrimaryGradientButtonStyle())
                     .padding(.horizontal, 24)
                     .padding(.top, 4)
@@ -437,11 +454,11 @@ private struct CatchRevealCard: View {
             .padding(20)
             .background(
                 RoundedRectangle(cornerRadius: 22)
-                    .fill(Color.black.opacity(0.7))
-                    .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(Theme.magenta.opacity(0.4), lineWidth: 1))
+                    .fill(Color.black.opacity(0.75))
+                    .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(Theme.magenta.opacity(0.5), lineWidth: 1))
             )
             .padding(24)
-            .shadow(color: Theme.magenta.opacity(0.5), radius: 40)
+            .shadow(color: Theme.magenta.opacity(0.55), radius: 44)
         }
     }
 }

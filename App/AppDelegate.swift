@@ -11,16 +11,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            button.title = "⌬"
-            button.font = .systemFont(ofSize: 14, weight: .bold)
-            button.toolTip = "FocusDex"
+            let symbol = NSImage(systemSymbolName: "sparkles", accessibilityDescription: "FocusDex")
+            symbol?.isTemplate = true
+            button.image = symbol
+            button.imagePosition = .imageOnly
+            button.toolTip = "FocusDex — focus and catch creatures"
             button.target = self
             button.action = #selector(togglePopover)
         }
 
         popover = NSPopover()
-        popover.contentSize = NSSize(width: 380, height: 520)
+        popover.contentSize = NSSize(width: 380, height: 560)
         popover.behavior = .transient
+        popover.animates = true
         popover.contentViewController = NSHostingController(
             rootView: ContentView()
                 .environmentObject(focus)

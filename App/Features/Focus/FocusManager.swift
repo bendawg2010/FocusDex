@@ -8,17 +8,23 @@ final class FocusManager: ObservableObject {
     @Published private(set) var elapsed: TimeInterval = 0
     @Published private(set) var timeRemaining: TimeInterval = 0
 
-    // ── Stockpile ──
-    @Published private(set) var pokeballs: Int = 0
-    @Published private(set) var greatBalls: Int = 0
-    @Published private(set) var ultraBalls: Int = 0
-    @Published private(set) var masterBalls: Int = 0
+    // ── Stockpile (persisted) ──
+    @Published private(set) var pokeballs: Int { didSet { Persistence.set(pokeballs, forKey: Persistence.Keys.pokeballs) } }
+    @Published private(set) var greatBalls: Int { didSet { Persistence.set(greatBalls, forKey: Persistence.Keys.greatBalls) } }
+    @Published private(set) var ultraBalls: Int { didSet { Persistence.set(ultraBalls, forKey: Persistence.Keys.ultraBalls) } }
+    @Published private(set) var masterBalls: Int { didSet { Persistence.set(masterBalls, forKey: Persistence.Keys.masterBalls) } }
 
-    // ── Pending spawns from the just-completed session ──
+    // ── Pending spawns (transient — not persisted) ──
     @Published private(set) var pendingSpawns: [Creature] = []
 
-    // ── Setup ──
-    @Published var plannedDuration: TimeInterval = 25 * 60
+    // ── Setup (persisted) ──
+    @Published var plannedDuration: TimeInterval { didSet { Persistence.set(plannedDuration, forKey: Persistence.Keys.plannedDuration) } }
+
+    // ── Streak (persisted) ──
+    @Published private(set) var currentStreak: Int { didSet { Persistence.set(currentStreak, forKey: Persistence.Keys.currentStreak) } }
+    @Published private(set) var bestStreak: Int { didSet { Persistence.set(bestStreak, forKey: Persistence.Keys.bestStreak) } }
+    @Published private(set) var totalSessions: Int { didSet { Persistence.set(totalSessions, forKey: Persistence.Keys.totalSessions) } }
+    @Published private(set) var totalFocusMin: Double { didSet { Persistence.set(totalFocusMin, forKey: Persistence.Keys.totalFocusMin) } }
 
     enum Phase: String { case idle, focusing, safari }
 
@@ -26,6 +32,18 @@ final class FocusManager: ObservableObject {
 
     private var timer: Timer?
     private var lastBallTick: TimeInterval = 0
+
+    init() {
+        self.pokeballs = Persistence.int(Persistence.Keys.pokeballs)
+        self.greatBalls = Persistence.int(Persistence.Keys.greatBalls)
+        self.ultraBalls = Persistence.int(Persistence.Keys.ultraBalls)
+        self.masterBalls = Persistence.int(Persistence.Keys.masterBalls)
+        self.plannedDuration = Persistence.double(Persistence.Keys.plannedDuration, default: 25 * 60)
+        self.currentStreak = Persistence.int(Persistence.Keys.currentStreak)
+        self.bestStreak = Persistence.int(Persistence.Keys.bestStreak)
+        self.totalSessions = Persistence.int(Persistence.Keys.totalSessions)
+        self.totalFocusMin = Persistence.double(Persistence.Keys.totalFocusMin)
+    }
 
     // MARK: - Lifecycle
 
@@ -47,16 +65,13 @@ final class FocusManager: ObservableObject {
         timeRemaining = 0
     }
 
-    /// Called after a session finishes — opens Safari Mode for catching.
     func enterSafari() {
         guard phase == .focusing || phase == .idle else { return }
-        // Roll a few spawns based on session length.
         let n = max(2, min(5, Int(elapsed / 60 / 10) + 2))
         pendingSpawns = (0..<n).compactMap { _ in Creature.starters.randomElement() }
         phase = .safari
     }
 
-    /// Called when the user closes Safari Mode.
     func dismissSafari() {
         pendingSpawns.removeAll()
         elapsed = 0
@@ -74,21 +89,49 @@ final class FocusManager: ObservableObject {
         }
 
         if timeRemaining <= 0 {
-            awardSessionBonuses(forDuration: elapsed)
-            timer?.invalidate(); timer = nil
-            enterSafari()
+            finishSession()
         }
     }
 
-    private func awardSessionBonuses(forDuration duration: TimeInterval) {
+    private func finishSession() {
+        let duration = elapsed
+        timer?.invalidate(); timer = nil
+
         if duration >= 25 * 60 { greatBalls += 1 }
         if duration >= 90 * 60 { ultraBalls += 1 }
         if duration >= 8 * 3600 { masterBalls += 1 }
+
+        totalSessions += 1
+        totalFocusMin += duration / 60
+        bumpStreak()
+        enterSafari()
+    }
+
+    private func bumpStreak() {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let lastTS = Persistence.double(Persistence.Keys.lastSessionDate)
+        let last = lastTS > 0 ? cal.startOfDay(for: Date(timeIntervalSince1970: lastTS)) : nil
+
+        if let last {
+            let days = cal.dateComponents([.day], from: last, to: today).day ?? 0
+            if days == 0 {
+                // already counted today
+            } else if days == 1 {
+                currentStreak += 1
+            } else {
+                currentStreak = 1
+            }
+        } else {
+            currentStreak = 1
+        }
+
+        if currentStreak > bestStreak { bestStreak = currentStreak }
+        Persistence.set(today.timeIntervalSince1970, forKey: Persistence.Keys.lastSessionDate)
     }
 
     // MARK: - Catch attempt
 
-    /// Spend one Pokeball-tier ball. Returns true if caught.
     func attemptCatch(_ creature: Creature, with tier: BallTier) -> Bool {
         switch tier {
         case .pokeball:   guard pokeballs > 0 else { return false }; pokeballs -= 1
@@ -97,7 +140,7 @@ final class FocusManager: ObservableObject {
         case .master:     guard masterBalls > 0 else { return false }; masterBalls -= 1
         }
 
-        if tier == .master { return true } // master always catches
+        if tier == .master { return true }
         let base: Double = {
             switch creature.rarity {
             case .common:    return 0.85
