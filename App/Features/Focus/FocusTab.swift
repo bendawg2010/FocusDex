@@ -6,9 +6,10 @@ struct FocusTab: View {
     var body: some View {
         Group {
             switch focus.phase {
-            case .idle:     IdleView()
-            case .focusing: SessionView()
-            case .safari:   SafariView()
+            case .idle:        IdleView()
+            case .focusing:    SessionView()
+            case .celebration: CelebrationView()
+            case .safari:      SafariView()
             }
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.85), value: focus.phase)
@@ -38,6 +39,7 @@ private struct IdleView: View {
                     DurationChip(minutes: Int(d / 60), selected: focus.plannedDuration == d) {
                         focus.plannedDuration = d
                         customMinutes = d / 60
+                        SoundFX.play(.tap)
                     }
                 }
             }
@@ -69,6 +71,7 @@ private struct IdleView: View {
                 }
             }
             .buttonStyle(PrimaryGradientButtonStyle())
+            .keyboardShortcut("n", modifiers: .command)
             .padding(.horizontal, 16)
             .padding(.bottom, 8)
         }
@@ -137,6 +140,7 @@ private struct BallStat: View {
                 .font(.system(.subheadline, design: .rounded).weight(.heavy))
                 .monospacedDigit()
                 .foregroundStyle(.white)
+                .contentTransition(.numericText())
             Text(label)
                 .font(.system(size: 8, weight: .heavy, design: .rounded))
                 .foregroundStyle(.secondary)
@@ -153,51 +157,198 @@ private struct BallStat: View {
 private struct SessionView: View {
     @EnvironmentObject var focus: FocusManager
     @State private var pulse: Bool = false
+    @State private var lastBall: Int = 0
+    @State private var showBallToast: Bool = false
 
     var body: some View {
-        VStack(spacing: 14) {
-            Spacer(minLength: 6)
+        ZStack {
+            VStack(spacing: 14) {
+                Spacer(minLength: 6)
 
-            ZStack {
-                Circle()
-                    .stroke(Color.white.opacity(0.07), lineWidth: 10)
-                    .frame(width: 210, height: 210)
-                Circle()
-                    .trim(from: 0, to: focus.plannedDuration > 0 ? CGFloat(focus.elapsed / focus.plannedDuration) : 0)
-                    .stroke(Theme.focusGradient, style: StrokeStyle(lineWidth: 10, lineCap: .round))
-                    .frame(width: 210, height: 210)
-                    .rotationEffect(.degrees(-90))
-                    .animation(.linear(duration: 0.4), value: focus.elapsed)
-                    .shadow(color: Theme.mint.opacity(0.6), radius: 14)
+                ZStack {
+                    Circle()
+                        .stroke(Color.white.opacity(0.07), lineWidth: 10)
+                        .frame(width: 210, height: 210)
+                    Circle()
+                        .trim(from: 0, to: focus.plannedDuration > 0 ? CGFloat(focus.elapsed / focus.plannedDuration) : 0)
+                        .stroke(Theme.focusGradient, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                        .frame(width: 210, height: 210)
+                        .rotationEffect(.degrees(-90))
+                        .animation(.linear(duration: 0.4), value: focus.elapsed)
+                        .shadow(color: Theme.mint.opacity(0.6), radius: 14)
 
-                VStack(spacing: 4) {
-                    Text(focus.formattedRemaining)
-                        .font(.system(size: 46, weight: .black, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(.white)
-                    Text("focusing")
-                        .font(.caption.weight(.bold))
-                        .kerning(2)
-                        .foregroundStyle(Theme.mint.opacity(pulse ? 1 : 0.5))
+                    VStack(spacing: 4) {
+                        Text(focus.formattedRemaining)
+                            .font(.system(size: 46, weight: .black, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundStyle(.white)
+                        Text("focusing")
+                            .font(.caption.weight(.bold))
+                            .kerning(2)
+                            .foregroundStyle(Theme.mint.opacity(pulse ? 1 : 0.5))
+                    }
                 }
-            }
-            .onAppear {
-                withAnimation(.easeInOut(duration: 1.6).repeatForever()) { pulse.toggle() }
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 1.6).repeatForever()) { pulse.toggle() }
+                    lastBall = focus.pokeballs
+                }
+                .onChange(of: focus.pokeballs) { new in
+                    if new > lastBall {
+                        lastBall = new
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                            showBallToast = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+                            withAnimation { showBallToast = false }
+                        }
+                    }
+                }
+
+                BallStockpileRow()
+                    .padding(.top, 6)
+
+                Spacer()
+
+                Button(role: .destructive, action: { focus.stopEarly() }) {
+                    Text("Stop early")
+                        .font(.caption.weight(.bold))
+                }
+                .buttonStyle(.borderless)
+                .foregroundStyle(.secondary)
+                .keyboardShortcut(".", modifiers: .command)
+                .padding(.bottom, 12)
             }
 
-            BallStockpileRow()
+            if showBallToast {
+                BallEarnedToast()
+                    .transition(.scale(scale: 0.7).combined(with: .opacity))
+                    .padding(.top, 6)
+                    .zIndex(10)
+            }
+        }
+    }
+}
+
+private struct BallEarnedToast: View {
+    var body: some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(Theme.mint.gradient)
+                .frame(width: 14, height: 14)
+                .overlay(Circle().strokeBorder(.white, lineWidth: 1))
+                .shadow(color: Theme.mint.opacity(0.7), radius: 8)
+            Text("+1 Focus Ball")
+                .font(.caption.weight(.heavy))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial, in: Capsule())
+        .overlay(Capsule().strokeBorder(Theme.mint.opacity(0.3), lineWidth: 0.5))
+        .shadow(color: .black.opacity(0.3), radius: 12, y: 6)
+    }
+}
+
+// MARK: - Celebration (between session end and safari)
+
+private struct CelebrationView: View {
+    @EnvironmentObject var focus: FocusManager
+    @State private var burstID = UUID()
+    @State private var pulse = false
+
+    var body: some View {
+        ZStack {
+            VStack(spacing: 12) {
+                Spacer()
+
+                Text("🎉")
+                    .font(.system(size: 72))
+                    .scaleEffect(pulse ? 1.08 : 0.95)
+                    .onAppear {
+                        withAnimation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true)) {
+                            pulse.toggle()
+                        }
+                    }
+
+                AnimatedGradientText(
+                    text: "SESSION COMPLETE",
+                    font: .system(size: 16, weight: .black, design: .rounded)
+                )
+                .kerning(2)
+
+                Text("\(focus.totalSessions) total · \(Int(focus.totalFocusMin)) min lifetime · 🔥 \(focus.currentStreak)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                HStack(spacing: 12) {
+                    EarnedTile(label: "Focused", value: minuteLabel(focus.lastSessionDuration), color: Theme.mint)
+                    EarnedTile(label: "Streak", value: "\(focus.currentStreak)", color: Theme.pink)
+                }
+                .padding(.horizontal, 24)
                 .padding(.top, 6)
 
-            Spacer()
+                if focus.lastSessionGreatEarned + focus.lastSessionUltraEarned + focus.lastSessionMasterEarned > 0 {
+                    VStack(spacing: 4) {
+                        Text("Earned:").font(.caption2.weight(.bold)).foregroundStyle(.secondary)
+                        HStack(spacing: 8) {
+                            if focus.lastSessionGreatEarned > 0 { BadgeChip(text: "Great Ball", color: Theme.blue) }
+                            if focus.lastSessionUltraEarned > 0 { BadgeChip(text: "Ultra Ball", color: Theme.yellow) }
+                            if focus.lastSessionMasterEarned > 0 { BadgeChip(text: "Master Ball", color: Theme.magenta) }
+                        }
+                    }
+                    .padding(.top, 4)
+                }
 
-            Button(role: .destructive, action: { focus.stopEarly() }) {
-                Text("Stop early")
-                    .font(.caption.weight(.bold))
+                Spacer()
+
+                Text("Safari Mode opening…")
+                    .font(.caption2.italic())
+                    .foregroundStyle(.secondary)
+                    .padding(.bottom, 14)
             }
-            .buttonStyle(.borderless)
-            .foregroundStyle(.secondary)
-            .padding(.bottom, 12)
+
+            ConfettiBurst(burstID: burstID, count: 100)
+                .allowsHitTesting(false)
         }
+    }
+
+    private func minuteLabel(_ sec: TimeInterval) -> String {
+        let m = Int(sec / 60); let s = Int(sec.truncatingRemainder(dividingBy: 60))
+        return s > 0 ? "\(m)m \(s)s" : "\(m)m"
+    }
+}
+
+private struct EarnedTile: View {
+    let label: String
+    let value: String
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.system(.title3, design: .rounded).weight(.black))
+                .monospacedDigit()
+                .foregroundStyle(.white)
+            Text(label)
+                .font(.system(size: 9, weight: .heavy, design: .rounded))
+                .foregroundStyle(.secondary)
+                .kerning(0.8)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(color.opacity(0.15), in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(color.opacity(0.4), lineWidth: 0.5))
+    }
+}
+
+private struct BadgeChip: View {
+    let text: String
+    let color: Color
+    var body: some View {
+        Text(text)
+            .font(.caption2.weight(.heavy))
+            .padding(.horizontal, 8).padding(.vertical, 3)
+            .background(color.opacity(0.25), in: Capsule())
+            .foregroundStyle(color)
     }
 }
 
@@ -227,6 +378,7 @@ private struct SafariView: View {
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
+                    .keyboardShortcut(.cancelAction)
                 }
                 .padding(.horizontal, 16).padding(.top, 8)
 
@@ -319,6 +471,7 @@ private struct FloatingCreature: View {
     @State private var bob: CGFloat = 0
     @State private var ballY: CGFloat = 400
     @State private var wobble: CGFloat = 0
+    @State private var press = false
 
     private var baseX: CGFloat {
         let columns: CGFloat = 3
@@ -334,9 +487,12 @@ private struct FloatingCreature: View {
                 .foregroundStyle(typeColor)
                 .shadow(color: typeColor.opacity(0.6), radius: 14)
                 .offset(x: baseX, y: baseY + bob)
-                .scaleEffect(caught ? 0 : 1)
+                .scaleEffect(caught ? 0 : (press ? 0.92 : 1))
                 .opacity(throwing && !caught ? 0.5 : 1)
                 .onTapGesture(perform: onTap)
+                .onLongPressGesture(minimumDuration: 0.01, pressing: { p in
+                    withAnimation(.spring(response: 0.15, dampingFraction: 0.7)) { press = p }
+                }, perform: {})
                 .onAppear {
                     withAnimation(.easeInOut(duration: 2 + Double(index % 3) * 0.3).repeatForever(autoreverses: true)) {
                         bob = -10

@@ -8,25 +8,30 @@ final class FocusManager: ObservableObject {
     @Published private(set) var elapsed: TimeInterval = 0
     @Published private(set) var timeRemaining: TimeInterval = 0
 
+    // Most-recent finished session, used in celebration screen
+    @Published private(set) var lastSessionDuration: TimeInterval = 0
+    @Published private(set) var lastSessionGreatEarned = 0
+    @Published private(set) var lastSessionUltraEarned = 0
+    @Published private(set) var lastSessionMasterEarned = 0
+
     // ── Stockpile (persisted) ──
     @Published private(set) var pokeballs: Int { didSet { Persistence.set(pokeballs, forKey: Persistence.Keys.pokeballs) } }
     @Published private(set) var greatBalls: Int { didSet { Persistence.set(greatBalls, forKey: Persistence.Keys.greatBalls) } }
     @Published private(set) var ultraBalls: Int { didSet { Persistence.set(ultraBalls, forKey: Persistence.Keys.ultraBalls) } }
     @Published private(set) var masterBalls: Int { didSet { Persistence.set(masterBalls, forKey: Persistence.Keys.masterBalls) } }
 
-    // ── Pending spawns (transient — not persisted) ──
     @Published private(set) var pendingSpawns: [Creature] = []
 
     // ── Setup (persisted) ──
     @Published var plannedDuration: TimeInterval { didSet { Persistence.set(plannedDuration, forKey: Persistence.Keys.plannedDuration) } }
 
-    // ── Streak (persisted) ──
+    // ── Streak / stats (persisted) ──
     @Published private(set) var currentStreak: Int { didSet { Persistence.set(currentStreak, forKey: Persistence.Keys.currentStreak) } }
     @Published private(set) var bestStreak: Int { didSet { Persistence.set(bestStreak, forKey: Persistence.Keys.bestStreak) } }
     @Published private(set) var totalSessions: Int { didSet { Persistence.set(totalSessions, forKey: Persistence.Keys.totalSessions) } }
     @Published private(set) var totalFocusMin: Double { didSet { Persistence.set(totalFocusMin, forKey: Persistence.Keys.totalFocusMin) } }
 
-    enum Phase: String { case idle, focusing, safari }
+    enum Phase: String { case idle, focusing, celebration, safari }
 
     static let durationPresets: [TimeInterval] = [25 * 60, 45 * 60, 90 * 60]
 
@@ -53,6 +58,7 @@ final class FocusManager: ObservableObject {
         elapsed = 0
         timeRemaining = plannedDuration
         lastBallTick = 0
+        SoundFX.play(.start)
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.tick() }
         }
@@ -66,7 +72,7 @@ final class FocusManager: ObservableObject {
     }
 
     func enterSafari() {
-        guard phase == .focusing || phase == .idle else { return }
+        guard phase == .focusing || phase == .idle || phase == .celebration else { return }
         let n = max(2, min(5, Int(elapsed / 60 / 10) + 2))
         pendingSpawns = (0..<n).compactMap { _ in Creature.starters.randomElement() }
         phase = .safari
@@ -86,6 +92,8 @@ final class FocusManager: ObservableObject {
         if elapsed - lastBallTick >= 300 {
             pokeballs += 1
             lastBallTick = elapsed
+            SoundFX.play(.ball)
+            Haptics.tick()
         }
 
         if timeRemaining <= 0 {
@@ -97,14 +105,27 @@ final class FocusManager: ObservableObject {
         let duration = elapsed
         timer?.invalidate(); timer = nil
 
-        if duration >= 25 * 60 { greatBalls += 1 }
-        if duration >= 90 * 60 { ultraBalls += 1 }
-        if duration >= 8 * 3600 { masterBalls += 1 }
+        var earnedGreat = 0, earnedUltra = 0, earnedMaster = 0
+        if duration >= 25 * 60 { greatBalls += 1; earnedGreat = 1 }
+        if duration >= 90 * 60 { ultraBalls += 1; earnedUltra = 1 }
+        if duration >= 8 * 3600 { masterBalls += 1; earnedMaster = 1 }
+
+        lastSessionDuration = duration
+        lastSessionGreatEarned = earnedGreat
+        lastSessionUltraEarned = earnedUltra
+        lastSessionMasterEarned = earnedMaster
 
         totalSessions += 1
         totalFocusMin += duration / 60
         bumpStreak()
-        enterSafari()
+        SoundFX.play(.sessionEnd)
+        Haptics.levelUp()
+
+        phase = .celebration
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            if phase == .celebration { enterSafari() }
+        }
     }
 
     private func bumpStreak() {
@@ -140,7 +161,10 @@ final class FocusManager: ObservableObject {
         case .master:     guard masterBalls > 0 else { return false }; masterBalls -= 1
         }
 
-        if tier == .master { return true }
+        if tier == .master {
+            SoundFX.play(.catchOK)
+            return true
+        }
         let base: Double = {
             switch creature.rarity {
             case .common:    return 0.85
@@ -158,7 +182,10 @@ final class FocusManager: ObservableObject {
             case .master:   return 1.0
             }
         }()
-        return Double.random(in: 0...1) < min(0.98, base + bonus)
+        let success = Double.random(in: 0...1) < min(0.98, base + bonus)
+        SoundFX.play(success ? .catchOK : .catchNo)
+        if success { Haptics.levelUp() } else { Haptics.tick() }
+        return success
     }
 
     enum BallTier { case pokeball, great, ultra, master }
