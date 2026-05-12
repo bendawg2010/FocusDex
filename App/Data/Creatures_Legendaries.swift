@@ -1,0 +1,163 @@
+import Foundation
+
+extension Creature {
+    /// Legendaries (#060–#071) — astronomical events + milestones.
+    static let legendaries: [Creature] = [
+        Creature(
+            id: 60,
+            name: "Solaryx",
+            primary: .time,
+            secondary: .sun,
+            rarity: .legendary,
+            hp: 130,
+            fp: 145,
+            sta: 120,
+            spd: 125,
+            signatureMove: "Totality",
+            blurb: "A shadow-feline crowned in solar corona that manifests only when the moon perfectly veils the sun during a verified total eclipse."
+        ),
+        Creature(
+            id: 61,
+            name: "Lunareth",
+            primary: .time,
+            secondary: .moon,
+            rarity: .legendary,
+            hp: 140,
+            fp: 130,
+            sta: 135,
+            spd: 110,
+            signatureMove: "Blood Hour",
+            blurb: "A crimson moon-wolf that prowls the desktop only during a true blood-moon umbral eclipse, drawn to honest journal entries."
+        ),
+        Creature(
+            id: 62,
+            name: "Helioth",
+            primary: .time,
+            secondary: .sun,
+            rarity: .legendary,
+            hp: 150,
+            fp: 130,
+            sta: 140,
+            spd: 90,
+            signatureMove: "Longest Day",
+            blurb: "A radiant twelve-rayed stag that wakes once a year on the summer solstice and walks horizon to horizon before sleeping 364 days."
+        ),
+        Creature(
+            id: 63,
+            name: "Cryosolva",
+            primary: .time,
+            secondary: .moon,
+            rarity: .legendary,
+            hp: 145,
+            fp: 125,
+            sta: 150,
+            spd: 95,
+            signatureMove: "Longest Night",
+            blurb: "A pale owl-fox keeper of the winter solstice who breathes warm fog beside trainers still focusing through the longest night."
+        ),
+        Creature(
+            id: 64,
+            name: "Persyx",
+            primary: .time,
+            secondary: .spark,
+            rarity: .legendary,
+            hp: 110,
+            fp: 140,
+            sta: 95,
+            spd: 165,
+            signatureMove: "Meteor Vow",
+            blurb: "A leaping star-cheetah that rides meteor showers into the dex and only appears between astronomical midnight and 4am."
+        ),
+        Creature(
+            id: 65,
+            name: "Selenova",
+            primary: .time,
+            secondary: .moon,
+            rarity: .legendary,
+            hp: 180,
+            fp: 110,
+            sta: 150,
+            spd: 70,
+            signatureMove: "Perigee Pull",
+            blurb: "A weightless cloud-whale-cat that drifts down on supermoons and settles on the notification center like a sleepy plush."
+        ),
+        Creature(
+            id: 66,
+            name: "Aurorix",
+            primary: .time,
+            secondary: .spirit,
+            rarity: .legendary,
+            hp: 120,
+            fp: 150,
+            sta: 120,
+            spd: 145,
+            signatureMove: "Solar Wind Weave",
+            blurb: "A seven-ribbon aurora dragon that visits only trainers under a real aurora forecast — most users will never trigger it."
+        ),
+        Creature(
+            id: 67,
+            name: "Bluora",
+            primary: .time,
+            secondary: .spirit,
+            rarity: .legendary,
+            hp: 125,
+            fp: 135,
+            sta: 130,
+            spd: 130,
+            signatureMove: "Twilight Pause",
+            blurb: "A twilight heron-deer holding lantern antlers that appears only in the 20-minute blue hour between day and night."
+        ),
+        Creature(
+            id: 68,
+            name: "Million Hourion",
+            primary: .time,
+            secondary: .zen,
+            rarity: .legendary,
+            hp: 175,
+            fp: 140,
+            sta: 175,
+            spd: 50,
+            signatureMove: "The Thousandth Hour",
+            blurb: "An ancient tortoise-monk with a gear-shell who arrives — not caught — the moment a trainer crosses 1,000 lifetime focus hours."
+        ),
+        Creature(
+            id: 69,
+            name: "Streakhalion",
+            primary: .time,
+            secondary: .spark,
+            rarity: .legendary,
+            hp: 150,
+            fp: 165,
+            sta: 130,
+            spd: 95,
+            signatureMove: "Year of Days",
+            blurb: "A magenta plasma stallion crowned in lightning, awarded only after a perfect 365-consecutive-day focus streak with no skips."
+        ),
+        Creature(
+            id: 70,
+            name: "Aetherix Primaris",
+            primary: .time,
+            secondary: .spirit,
+            rarity: .mythic,
+            hp: 145,
+            fp: 145,
+            sta: 145,
+            spd: 145,
+            signatureMove: "The First Catch",
+            blurb: "A prism-glass seraph holding the 001 ball — a single global spawn claimed by the first trainer worldwide, then retired forever."
+        ),
+        Creature(
+            id: 71,
+            name: "Procrastine, the Throne-Sitter",
+            primary: .time,
+            secondary: .glitch,
+            rarity: .legendary,
+            hp: 200,
+            fp: 80,
+            sta: 200,
+            spd: 30,
+            signatureMove: "Just Five More Minutes",
+            blurb: "A sympathetic couch-king on a throne of unfinished tasks — boss legendary at hour 6 of an 8-hour marathon, defeated by not stopping."
+        ),
+    ]
+}

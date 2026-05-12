@@ -1,0 +1,58 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  macos-build:
+    name: macos-build
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build Release
+        shell: bash
+        run: |
+          set -o pipefail
+          if command -v xcbeautify >/dev/null 2>&1; then
+            FORMATTER="xcbeautify"
+          elif command -v xcpretty >/dev/null 2>&1; then
+            FORMATTER="xcpretty"
+          else
+            FORMATTER="cat"
+          fi
+          xcodebuild \
+            -project FocusDex.xcodeproj \
+            -scheme FocusDex \
+            -configuration Release \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build | $FORMATTER
+
+      - name: Verify FocusDex.app was produced
+        run: |
+          APP_PATH="build/DerivedData/Build/Products/Release/FocusDex.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "ERROR: $APP_PATH not found"
+            exit 1
+          fi
+          echo "Found app at $APP_PATH"
+
+      - name: Upload FocusDex.app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FocusDex.app
+          path: build/DerivedData/Build/Products/Release/FocusDex.app

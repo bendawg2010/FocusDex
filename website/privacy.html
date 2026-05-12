@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — FocusDex</title>
+<meta name="description" content="FocusDex privacy policy. Short version: we don't have your data because we never see it.">
+<meta property="og:title" content="FocusDex — Privacy Policy">
+<meta property="og:description" content="The app is fully local. No analytics. No telemetry. No login.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* Local prose styles for the privacy page — built on the global CSS variables */
+  .privacy-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 80px 32px 100px;
+  }
+  .privacy-back {
+    display: inline-block;
+    margin-bottom: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+  .privacy-back:hover { color: var(--mint); }
+  .privacy-title {
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, var(--pink), var(--magenta), var(--blue));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .privacy-sub {
+    font-size: 19px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .privacy-meta {
+    font-size: 13px;
+    color: var(--text-dim);
+    opacity: 0.7;
+    margin-bottom: 48px;
+  }
+  .privacy-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 30px;
+    margin-bottom: 20px;
+  }
+  .privacy-section h2 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+  .privacy-section h2 .num {
+    color: var(--magenta);
+    margin-right: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .privacy-section p {
+    color: var(--text-dim);
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  .privacy-section p:last-child { margin-bottom: 0; }
+  .privacy-section strong { color: var(--text); font-weight: 700; }
+  .privacy-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0 0;
+  }
+  .privacy-section ul li {
+    color: var(--text-dim);
+    font-size: 16px;
+    padding: 8px 0 8px 22px;
+    position: relative;
+  }
+  .privacy-section ul li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--mint);
+    font-weight: 700;
+  }
+  .privacy-section code {
+    background: var(--card-hi);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 14px;
+    color: var(--yellow);
+  }
+  .privacy-section a { color: var(--blue); font-weight: 600; }
+  .privacy-section a:hover { color: var(--mint); }
+</style>
+</head>
+<body>
+
+<!-- nav -->
+<nav>
+  <div class="nav-brand">
+    <a href="/" style="display:flex;align-items:center;gap:10px;">
+      <span class="nav-logo">⚡</span>
+      <span class="nav-name">FocusDex</span>
+    </a>
+  </div>
+  <div class="nav-links">
+    <a href="/#how">How it works</a>
+    <a href="/#dex">The Dex</a>
+    <a href="/#starters">Starters</a>
+    <a href="/demo/" class="nav-demo">Live Demo →</a>
+    <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</nav>
+
+<!-- privacy content -->
+<main class="privacy-wrap">
+  <a class="privacy-back" href="/">← Back to FocusDex</a>
+
+  <h1 class="privacy-title">Privacy Policy</h1>
+  <p class="privacy-sub">Short version: we don't have your data because we never see it.</p>
+  <p class="privacy-meta">Last updated: May 12, 2026</p>
+
+  <section class="privacy-section">
+    <h2><span class="num">1.</span>What we collect</h2>
+    <p><strong>Nothing.</strong> The FocusDex app is fully local. No analytics, no crash reporting (yet), no telemetry, no phone-home.</p>
+    <p>Your entire Pokédex, streak history, ball inventory, session logs, and starter pick live in <code>UserDefaults</code> on your Mac. Nothing is uploaded. There is no server. There is no account.</p>
+  </section>
+
+  <section class="privacy-section">
+    <h2><span class="num">2.</span>What the website collects</h2>
+    <p>This site is served by <strong>Cloudflare Pages</strong>. Cloudflare keeps standard server logs — your IP address, user agent, and the URL you requested — for security and abuse-prevention purposes. That's their thing, not ours, and we don't read those logs.</p>
+    <p>We don't set any cookies. There's no Google Analytics, no Plausible, no Fathom, no pixel from anyone. The page you're reading is a static HTML file.</p>
+  </section>
+
+  <section class="privacy-section">
+    <h2><span class="num">3.</span>What integrations we might add later</h2>
+    <p>Some features in the roadmap need OS-level permissions. All of them will be strictly opt-in, and none of the data will leave your Mac:</p>
+    <ul>
+      <li><strong>Apple Health</strong> — sleep data for Dream-type spawns. <strong>Read-only.</strong> Never leaves your device.</li>
+      <li><strong>Calendar</strong> — your events for Meeting-type spawns. <strong>Read-only.</strong> Never leaves your device.</li>
+      <li><strong>Location</strong> — regional creatures and local weather. <strong>Read-only.</strong> Never leaves your device.</li>
+    </ul>
+    <p>If you don't grant a permission, the related feature just quietly doesn't run. Everything else still works fine.</p>
+  </section>
+
+  <section class="privacy-section">
+    <h2><span class="num">4.</span>What we'll never do</h2>
+    <ul>
+      <li><strong>Never</strong> sell your data. To anyone. Ever.</li>
+      <li><strong>Never</strong> share it with advertisers, brokers, or partners.</li>
+      <li><strong>Never</strong> train ML or AI models on your focus sessions, your apps, or your catches.</li>
+      <li><strong>Never</strong> require you to sign in, make an account, or hand over an email address.</li>
+    </ul>
+  </section>
+
+  <section class="privacy-section">
+    <h2><span class="num">5.</span>How to wipe everything</h2>
+    <p>Open FocusDex → <strong>Settings</strong> → <strong>Reset all progress</strong>. That clears the entire <code>UserDefaults</code> store for the app. Your Dex, streak, balls, and session history vanish.</p>
+    <p>You can also delete the app like any other Mac app — the data goes with it. There's no cloud copy to chase down because there's no cloud.</p>
+  </section>
+
+  <section class="privacy-section">
+    <h2><span class="num">6.</span>Open source</h2>
+    <p>Don't take our word for any of this. Every line of FocusDex is on GitHub: <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">github.com/bendawg2010/FocusDex</a>.</p>
+    <p>Search the code. Grep for <code>URLSession</code>. Look for analytics SDKs. You won't find any, because there aren't any.</p>
+  </section>
+
+  <section class="privacy-section">
+    <h2><span class="num">7.</span>Contact</h2>
+    <p>Got a privacy question, concern, or spotted something sketchy? Open an issue: <a href="https://github.com/bendawg2010/FocusDex/issues" target="_blank" rel="noopener">github.com/bendawg2010/FocusDex/issues</a>. Public is fine — we'd rather answer once where everyone can see it.</p>
+  </section>
+
+  <section class="privacy-section">
+    <h2><span class="num">8.</span>Updates to this policy</h2>
+    <p>If anything material changes — a new integration, a new permission, anything that touches your data — we'll announce it in the changelog before the version that introduces it ships. No quiet edits to this page.</p>
+  </section>
+</main>
+
+<!-- footer -->
+<footer>
+  <div class="footer-main">
+    <span>© FocusDex · MIT licensed · <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">open source</a></span>
+  </div>
+  <div class="footer-tip">
+    <a href="https://cash.app/$Dryeetsolutions" target="_blank" rel="noopener" class="cashapp">💸 Tip $Dryeetsolutions on Cash App</a>
+    <a href="https://github.com/sponsors/bendawg2010" target="_blank" rel="noopener">Sponsor</a>
+  </div>
+  <div class="footer-fam">
+    <span class="fam-label">Notchyverse fam:</span>
+    <a href="#" target="_blank" rel="noopener">NotchPop</a> ·
+    <a href="#" target="_blank" rel="noopener">WallPop</a> ·
+    <a href="#" target="_blank" rel="noopener">Boulder</a> ·
+    <a href="#" target="_blank" rel="noopener">SkyJournal</a> ·
+    <a href="#" target="_blank" rel="noopener">Campfire</a>
+  </div>
+</footer>
+
+</body>
+</html>

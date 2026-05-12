@@ -81,7 +81,21 @@ final class FocusManager: ObservableObject {
         } else {
             n = max(2, min(5, Int(elapsed / 60 / 10) + 2))
         }
-        pendingSpawns = (0..<n).compactMap { _ in Creature.starters.randomElement() }
+        // Sample from the full 147-creature pool (rarity-weighted: commons most likely).
+        let pool = Creature.all.isEmpty ? Creature.starters : Creature.all
+        pendingSpawns = (0..<n).compactMap { _ in
+            // Weighted: commons 50%, uncommons 25%, rares 15%, legendaries 8%, mythics 2%
+            let r = Double.random(in: 0...1)
+            let bucket: Rarity = {
+                if r < 0.50 { return .common }
+                if r < 0.75 { return .uncommon }
+                if r < 0.90 { return .rare }
+                if r < 0.98 { return .legendary }
+                return .mythic
+            }()
+            let filtered = pool.filter { $0.rarity == bucket }
+            return (filtered.isEmpty ? pool : filtered).randomElement()
+        }
         phase = .safari
     }
 

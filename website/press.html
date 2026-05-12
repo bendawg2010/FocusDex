@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Press Kit — FocusDex</title>
+<meta name="description" content="FocusDex press kit. Pitch, quotes, brand palette, mascot, key numbers, and links — for writeups, podcasts, threads, and anyone curious.">
+<meta property="og:title" content="FocusDex — Press Kit">
+<meta property="og:description" content="For writeups, podcasts, threads, and anyone curious.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .press-section { padding: 60px 32px; max-width: 980px; margin: 0 auto; }
+  .press-section h2 { font-size: clamp(26px, 3.4vw, 38px); font-weight: 900; letter-spacing: -0.03em; margin-bottom: 18px; }
+  .press-section p { font-size: 17px; color: var(--text-dim); margin-bottom: 14px; max-width: 720px; }
+  .press-section p strong { color: var(--text); }
+  .press-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mint); margin-bottom: 8px; }
+  .press-quote { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--magenta); border-radius: 16px; padding: 24px 28px; margin-bottom: 16px; font-size: 19px; font-weight: 600; color: var(--text); line-height: 1.45; }
+  .press-quote::before { content: "“"; font-size: 48px; line-height: 0; vertical-align: -16px; color: var(--magenta); margin-right: 8px; }
+  .swatch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+  .swatch { border-radius: 16px; padding: 80px 18px 18px; border: 1px solid var(--border); cursor: pointer; transition: transform 160ms; position: relative; overflow: hidden; }
+  .swatch:hover { transform: translateY(-3px); }
+  .swatch-name { font-weight: 800; font-size: 15px; color: white; text-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+  .swatch-hex { font-family: ui-monospace, monospace; font-size: 13px; color: rgba(255,255,255,0.85); text-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+  .swatch-copied { position: absolute; top: 10px; right: 12px; font-size: 11px; font-weight: 700; color: white; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px; opacity: 0; transition: opacity 200ms; }
+  .swatch.copied .swatch-copied { opacity: 1; }
+  .logo-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 60px 32px; text-align: center; }
+  .logo-card .wordmark { font-size: clamp(56px, 9vw, 110px); font-weight: 900; letter-spacing: -0.04em; line-height: 1; }
+  .numbers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; }
+  .number-tile { padding: 22px 18px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; text-align: center; }
+  .number-tile .n { font-size: 32px; font-weight: 900; background: linear-gradient(135deg, var(--mint), var(--blue)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; margin-bottom: 6px; }
+  .number-tile .l { font-size: 13px; color: var(--text-dim); font-weight: 600; }
+  .link-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+  .link-list li { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; }
+  .link-list a { font-weight: 700; }
+  .creator-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px 32px; }
+  .contact-box { background: linear-gradient(160deg, rgba(255, 107, 107, 0.14), rgba(193, 71, 255, 0.18)); border: 1px solid rgba(193, 71, 255, 0.5); border-radius: 20px; padding: 28px 32px; }
+  .contact-box code { background: rgba(0,0,0,0.35); padding: 3px 8px; border-radius: 6px; font-size: 14px; color: var(--yellow); }
+</style>
+</head>
+<body>
+
+<!-- nav -->
+<nav>
+  <div class="nav-brand">
+    <span class="nav-logo">⚡</span>
+    <span class="nav-name">FocusDex</span>
+  </div>
+  <div class="nav-links">
+    <a href="/#how">How it works</a>
+    <a href="/#dex">The Dex</a>
+    <a href="/#starters">Starters</a>
+    <a href="/demo/" class="nav-demo">Live Demo →</a>
+    <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</nav>
+
+<!-- hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="status-pill">
+      <span class="status-dot"></span> Press kit · v1 · updated 2026
+    </div>
+    <h1 class="hero-title"><span class="grad-text">Press Kit</span></h1>
+    <p class="hero-tagline">For writeups, podcasts, threads, and anyone curious.</p>
+  </div>
+</section>
+
+<!-- 1. What is FocusDex? -->
+<section class="press-section">
+  <div class="press-eyebrow">Elevator pitch</div>
+  <h2>What is FocusDex?</h2>
+  <p><strong>FocusDex</strong> is a macOS focus app with Pokémon-style mechanics. Set a timer and focus. Every five minutes earns a Pokéball. When the timer ends, Safari Mode opens and the creatures that spawned during your session appear on screen — you throw your balls, catch them, and they enter your Pokédex. Your Dex becomes a living diary of the year you spent doing actual work.</p>
+</section>
+
+<!-- 2. The pitch (longer) -->
+<section class="press-section">
+  <div class="press-eyebrow">The longer story</div>
+  <h2>The pitch</h2>
+  <p>Productivity apps used to punish you. Forest grows a tree and kills it if you leave. Focus Friend guilt-trips you over the texts you haven't returned. FocusDex points in the opposite direction — the reward <em>is</em> the game. You focus, you earn Pokéballs, creatures spawn around you, and at the end of the session you get to <em>play</em>. It's not a streak. It's a hobby with receipts.</p>
+  <p>There are <strong>147 creatures</strong> designed for launch, across 15 types — Code, Art, Doc, Pixel, Spirit, Glitch, and more. They're shaped by what you do and where you are: Xcode spawns Code-types, rain spawns Storm-types, a real solar eclipse spawns a Legendary that exists for the duration of the eclipse and then never again. Twelve Legendaries. Eight Mythicals. Some only appear if your streak is long enough to deserve them.</p>
+  <p>The host of all this is <strong>Notchy</strong>, a tiny mascot who lives inside the MacBook notch — yellow eyes, mint highlights, friendly Professor Oak energy. He hands you your starter, cheers you on, and watches with quiet concern when you bail. FocusDex isn't trying to be Forest. It's trying to be the Animal Crossing of productivity: low-stakes, daily, beautiful, and the longer you play the more it remembers about you.</p>
+</section>
+
+<!-- 3. Quotes -->
+<section class="press-section">
+  <div class="press-eyebrow">Pull quotes</div>
+  <h2>Quotes</h2>
+  <div class="press-quote">FocusDex makes focusing the thing that unlocks the next dopamine hit you actually want.</div>
+  <div class="press-quote">Forest punishes you. Focus Friend guilt-trips you. FocusDex lets you play the game.</div>
+</section>
+
+<!-- 4. Brand palette -->
+<section class="press-section">
+  <div class="press-eyebrow">Visual identity</div>
+  <h2>Brand palette</h2>
+  <p>Five core brand colors. Click any swatch to copy the hex.</p>
+  <div class="swatch-grid">
+    <div class="swatch" data-hex="#FF6B6B" style="background:#FF6B6B"><span class="swatch-copied">Copied!</span><div class="swatch-name">--pink</div><div class="swatch-hex">#FF6B6B</div></div>
+    <div class="swatch" data-hex="#C147FF" style="background:#C147FF"><span class="swatch-copied">Copied!</span><div class="swatch-name">--magenta</div><div class="swatch-hex">#C147FF</div></div>
+    <div class="swatch" data-hex="#47A0FF" style="background:#47A0FF"><span class="swatch-copied">Copied!</span><div class="swatch-name">--blue</div><div class="swatch-hex">#47A0FF</div></div>
+    <div class="swatch" data-hex="#2EE6A0" style="background:#2EE6A0"><span class="swatch-copied">Copied!</span><div class="swatch-name">--mint</div><div class="swatch-hex">#2EE6A0</div></div>
+    <div class="swatch" data-hex="#FFD960" style="background:#FFD960"><span class="swatch-copied">Copied!</span><div class="swatch-name">--yellow</div><div class="swatch-hex">#FFD960</div></div>
+  </div>
+</section>
+
+<!-- 5. Logo -->
+<section class="press-section">
+  <div class="press-eyebrow">Wordmark</div>
+  <h2>Logo</h2>
+  <p>The FocusDex wordmark uses the full brand gradient, animated. On dark backgrounds only.</p>
+  <div class="logo-card">
+    <div class="wordmark"><span class="grad-text">FocusDex</span></div>
+  </div>
+</section>
+
+<!-- 6. Mascot -->
+<section class="press-section notchy-section" style="padding:60px 32px;">
+  <div class="press-eyebrow">Mascot</div>
+  <h2>Notchy</h2>
+  <div class="notchy-row" style="margin-top:24px;">
+    <div class="notchy-art">
+      <div class="notch-mock">
+        <div class="notch-shape">
+          <span class="notchy-emoji" style="color:var(--yellow);filter:drop-shadow(0 0 10px var(--yellow));">●︎</span>
+        </div>
+      </div>
+    </div>
+    <div class="notchy-info">
+      <p>Notchy lives in the MacBook notch. <strong>Yellow eyes, mint highlights.</strong> Friendly Professor Oak energy — hands you your starter, celebrates a finished session, glances at you with concern when you bail.</p>
+      <p>The notch was always supposed to be a window into another world. Notchy makes it one.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 7. Key numbers -->
+<section class="press-section">
+  <div class="press-eyebrow">Stats</div>
+  <h2>Key numbers</h2>
+  <div class="numbers-grid">
+    <div class="number-tile"><div class="n">147</div><div class="l">creatures</div></div>
+    <div class="number-tile"><div class="n">15</div><div class="l">types</div></div>
+    <div class="number-tile"><div class="n">12</div><div class="l">legendaries</div></div>
+    <div class="number-tile"><div class="n">8</div><div class="l">mythicals</div></div>
+    <div class="number-tile"><div class="n">MIT</div><div class="l">licensed</div></div>
+    <div class="number-tile"><div class="n">$0</div><div class="l">free forever</div></div>
+  </div>
+</section>
+
+<!-- 8. Links -->
+<section class="press-section">
+  <div class="press-eyebrow">Resources</div>
+  <h2>Links</h2>
+  <ul class="link-list">
+    <li><a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">github.com/bendawg2010/FocusDex</a></li>
+    <li><a href="https://focusdex.pages.dev" target="_blank" rel="noopener">focusdex.pages.dev</a></li>
+    <li><a href="/demo/">/demo</a></li>
+    <li><a href="https://cash.app/$Dryeetsolutions" target="_blank" rel="noopener">cash.app/$Dryeetsolutions</a></li>
+    <li><a href="https://x.com/bendawg2010" target="_blank" rel="noopener">x.com/bendawg2010</a></li>
+  </ul>
+</section>
+
+<!-- 9. Creator -->
+<section class="press-section">
+  <div class="press-eyebrow">The person behind it</div>
+  <h2>Creator</h2>
+  <div class="creator-card">
+    <p><strong>Ben Burnette.</strong> Indie developer. Macs only. Cooks.</p>
+    <p>Tip jar: <a href="https://cash.app/$Dryeetsolutions" target="_blank" rel="noopener">$Dryeetsolutions</a> on Cash App · GitHub: <a href="https://github.com/bendawg2010" target="_blank" rel="noopener">bendawg2010</a></p>
+  </div>
+</section>
+
+<!-- 10. Press contact -->
+<section class="press-section">
+  <div class="press-eyebrow">Get in touch</div>
+  <h2>Contact for press</h2>
+  <div class="contact-box">
+    <p>Open a GitHub issue with <code>[PRESS]</code> in the title. I read every one. Podcasts, writeups, threads, weird angles — all welcome.</p>
+    <p style="margin-top:14px;"><a class="btn primary" href="https://github.com/bendawg2010/FocusDex/issues/new?title=%5BPRESS%5D%20" target="_blank" rel="noopener">⭐ Open a [PRESS] issue</a></p>
+  </div>
+</section>
+
+<!-- footer -->
+<footer>
+  <div class="footer-main">
+    <span>© FocusDex · MIT licensed · <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">open source</a></span>
+  </div>
+  <div class="footer-tip">
+    <a href="https://cash.app/$Dryeetsolutions" target="_blank" rel="noopener" class="cashapp">💸 Tip $Dryeetsolutions on Cash App</a>
+    <a href="https://github.com/sponsors/bendawg2010" target="_blank" rel="noopener">Sponsor</a>
+  </div>
+  <div class="footer-fam">
+    <span class="fam-label">Notchyverse fam:</span>
+    <a href="#" target="_blank" rel="noopener">NotchPop</a> ·
+    <a href="#" target="_blank" rel="noopener">WallPop</a> ·
+    <a href="#" target="_blank" rel="noopener">Boulder</a> ·
+    <a href="#" target="_blank" rel="noopener">SkyJournal</a> ·
+    <a href="#" target="_blank" rel="noopener">Campfire</a>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.swatch').forEach(function(el){
+    el.addEventListener('click', function(){
+      var hex = el.getAttribute('data-hex');
+      navigator.clipboard && navigator.clipboard.writeText(hex);
+      el.classList.add('copied');
+      setTimeout(function(){ el.classList.remove('copied'); }, 1200);
+    });
+  });
+</script>
+</body>
+</html>

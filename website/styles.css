@@ -591,6 +591,19 @@ footer {
   font-weight: 800; color: white !important;
   box-shadow: 0 6px 18px rgba(0, 214, 50, 0.30);
 }
+.footer-pages {
+  margin: 0 auto 18px;
+  font-size: 13px;
+  color: var(--text-dim);
+  text-align: center;
+}
+.footer-pages a {
+  color: var(--text-dim);
+  margin: 0 4px;
+  font-weight: 600;
+}
+.footer-pages a:hover { color: var(--mint); }
+
 .footer-fam {
   font-size: 13px;
   color: var(--text-dim);

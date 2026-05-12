@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Changelog — FocusDex</title>
+<meta name="description" content="Every FocusDex release, in order. The full ship log.">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===== changelog page ===== */
+  .changelog-section { padding-top: 60px; padding-bottom: 80px; }
+  .changelog-list {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .release-card {
+    position: relative;
+    padding: 28px 32px 28px 36px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    transition: transform 200ms, background 200ms, box-shadow 200ms;
+    overflow: hidden;
+  }
+  .release-card:hover {
+    transform: translateY(-2px);
+    background: var(--card-hi);
+    box-shadow: 0 14px 40px rgba(193, 71, 255, 0.18);
+  }
+  .release-card::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 4px;
+    background: var(--stripe, var(--magenta));
+    border-radius: 4px 0 0 4px;
+  }
+  .release-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .release-version {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .release-version .v-tag {
+    background: linear-gradient(135deg, var(--stripe-a, var(--magenta)), var(--stripe-b, var(--blue)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-right: 8px;
+  }
+  .release-date {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    background: var(--card-hi);
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+  }
+  .release-subtitle {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-bottom: 14px;
+  }
+  .release-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .release-card li {
+    position: relative;
+    padding-left: 20px;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .release-card li::before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: var(--stripe, var(--magenta));
+    font-weight: 900;
+  }
+  .release-card li strong { color: var(--text); }
+  .release-card code {
+    background: var(--card-hi);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--mint);
+  }
+
+  /* major.minor stripe accents */
+  .v-0-5 { --stripe: var(--mint);    --stripe-a: var(--mint);    --stripe-b: var(--blue); }
+  .v-0-4 { --stripe: var(--magenta); --stripe-a: var(--magenta); --stripe-b: var(--pink); }
+  .v-0-3 { --stripe: var(--blue);    --stripe-a: var(--blue);    --stripe-b: var(--magenta); }
+  .v-0-2 { --stripe: var(--yellow);  --stripe-a: var(--yellow);  --stripe-b: var(--pink); }
+  .v-0-1 { --stripe: var(--pink);    --stripe-a: var(--pink);    --stripe-b: var(--magenta); }
+
+  .changelog-outro {
+    margin-top: 56px;
+    text-align: center;
+    padding: 28px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .changelog-outro p {
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+
+<!-- nav -->
+<nav>
+  <div class="nav-brand">
+    <a href="/" style="display:flex;align-items:center;gap:10px;color:inherit;">
+      <span class="nav-logo">⚡</span>
+      <span class="nav-name">FocusDex</span>
+    </a>
+  </div>
+  <div class="nav-links">
+    <a href="/#how">How it works</a>
+    <a href="/#dex">The Dex</a>
+    <a href="/#starters">Starters</a>
+    <a href="/demo/" class="nav-demo">Live Demo →</a>
+    <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</nav>
+
+<!-- header -->
+<section class="hero" style="padding: 80px 32px 40px;">
+  <div class="hero-inner">
+    <h1 class="hero-title"><span class="grad-text">Changelog</span></h1>
+    <p class="hero-tagline" style="font-size: 20px;">Every release, in order.</p>
+  </div>
+</section>
+
+<!-- changelog -->
+<section class="section changelog-section">
+  <div class="changelog-list">
+
+    <article class="release-card v-0-5">
+      <div class="release-head">
+        <h2 class="release-version"><span class="v-tag">v0.5.1</span></h2>
+        <span class="release-date">2026-05-12</span>
+      </div>
+      <p class="release-subtitle">Catch game playable without a session</p>
+      <ul>
+        <li>Catch creatures freely without locking it behind work</li>
+        <li>Onboarding grants <strong>8 Focus</strong> + <strong>2 Great Balls</strong> so the game's playable on day 1</li>
+        <li>Mint pill <strong>"Catch creatures →"</strong> button on the idle screen (<code>⌘G</code>)</li>
+      </ul>
+    </article>
+
+    <article class="release-card v-0-5">
+      <div class="release-head">
+        <h2 class="release-version"><span class="v-tag">v0.5.0</span></h2>
+        <span class="release-date">2026-05-12</span>
+      </div>
+      <p class="release-subtitle">Claude Design implemented</p>
+      <ul>
+        <li>Ported the Claude Design pixel-art sprite library to SwiftUI</li>
+        <li>17 sprite constants (Notchy variants, 9 starter creatures, 4 Pokéballs, 4 streak flames)</li>
+        <li><strong>TypeBadge</strong> / <strong>TypePill</strong> / <strong>Sigil</strong> / <strong>FocusDexWordmark</strong> as native views</li>
+        <li><code>/demo/</code> — full React prototype embedded on the site</li>
+      </ul>
+    </article>
+
+    <article class="release-card v-0-4">
+      <div class="release-head">
+        <h2 class="release-version"><span class="v-tag">v0.4.0</span></h2>
+        <span class="release-date">2026-05-12</span>
+      </div>
+      <p class="release-subtitle">Major polish wave 2</p>
+      <ul>
+        <li>Live menubar countdown</li>
+        <li>Auto-popover on session end with celebration screen</li>
+        <li>Sound effects (NSSound) + haptic feedback</li>
+        <li>Right-click menubar context menu</li>
+        <li>Keyboard shortcuts (<code>⌘N</code> start, <code>⌘.</code> stop, <code>⌘G</code> catch)</li>
+        <li>BallsTab rebuild with gradient ball icons + lifetime stats card</li>
+      </ul>
+    </article>
+
+    <article class="release-card v-0-3">
+      <div class="release-head">
+        <h2 class="release-version"><span class="v-tag">v0.3.0</span></h2>
+        <span class="release-date">2026-05-12</span>
+      </div>
+      <p class="release-subtitle">Major polish wave 1</p>
+      <ul>
+        <li>Persistence: pokeballs, caught creatures, streak all persist</li>
+        <li>Onboarding flow with starter selection + confetti</li>
+        <li>Custom segmented TabBar with gradient pill indicator</li>
+        <li><strong>OrbBackground</strong> + <strong>AnimatedGradientText</strong> throughout</li>
+      </ul>
+    </article>
+
+    <article class="release-card v-0-2">
+      <div class="release-head">
+        <h2 class="release-version"><span class="v-tag">v0.2.0</span></h2>
+        <span class="release-date">2026-05-12</span>
+      </div>
+      <p class="release-subtitle">Theme + Safari Mode</p>
+      <ul>
+        <li>Theme system: brand palette + gradients + Canvas-based components</li>
+        <li>Safari Mode catch minigame: floating creatures, tap-to-throw ball, wobble + confetti reveal</li>
+        <li>Removed the lock-in / app-blocking gating</li>
+      </ul>
+    </article>
+
+    <article class="release-card v-0-1">
+      <div class="release-head">
+        <h2 class="release-version"><span class="v-tag">v0.1.0</span></h2>
+        <span class="release-date">2026-05-12</span>
+      </div>
+      <p class="release-subtitle">Initial</p>
+      <ul>
+        <li>147 creature design prompts complete</li>
+        <li>Promo site live at <code>focusdex.pages.dev</code></li>
+        <li>Mac app skeleton: menubar, focus timer, ball stockpile, dex stub</li>
+        <li>Repo public on GitHub, MIT licensed</li>
+      </ul>
+    </article>
+
+  </div>
+
+  <div class="changelog-outro">
+    <p>Want to know more?</p>
+    <a class="btn primary" href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">⭐ Star on GitHub</a>
+  </div>
+</section>
+
+<!-- footer -->
+<footer>
+  <div class="footer-main">
+    <span>© FocusDex · MIT licensed · <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">open source</a></span>
+  </div>
+  <div class="footer-tip">
+    <a href="https://cash.app/$Dryeetsolutions" target="_blank" rel="noopener" class="cashapp">💸 Tip $Dryeetsolutions on Cash App</a>
+    <a href="https://github.com/sponsors/bendawg2010" target="_blank" rel="noopener">Sponsor</a>
+  </div>
+  <div class="footer-fam">
+    <span class="fam-label">Notchyverse fam:</span>
+    <a href="#" target="_blank" rel="noopener">NotchPop</a> ·
+    <a href="#" target="_blank" rel="noopener">WallPop</a> ·
+    <a href="#" target="_blank" rel="noopener">Boulder</a> ·
+    <a href="#" target="_blank" rel="noopener">SkyJournal</a> ·
+    <a href="#" target="_blank" rel="noopener">Campfire</a>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprite Preview — FocusDex</title>
+<meta name="description" content="Every pixel sprite shipped with FocusDex, rendered at 8 different scales.">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .sprite-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+  }
+  .sprite-card {
+    padding: 24px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    transition: transform 200ms, background 200ms;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .sprite-card:hover {
+    transform: translateY(-4px);
+    background: var(--card-hi);
+  }
+  .sprite-card h3 {
+    font-size: 18px; font-weight: 800;
+    letter-spacing: -0.01em;
+    text-transform: capitalize;
+  }
+  .sprite-scales {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 14px 8px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .sprite-scale {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+  }
+  .sprite-scale-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+  .sprite-scale-canvas {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sprite-scale-canvas svg {
+    display: block;
+    image-rendering: pixelated;
+  }
+  .copy-btn {
+    align-self: flex-start;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card-hi);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 150ms, transform 150ms;
+  }
+  .copy-btn:hover { background: rgba(193, 71, 255, 0.18); transform: translateY(-1px); }
+  .sprite-meta {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+</style>
+</head>
+<body>
+
+<!-- nav -->
+<nav>
+  <div class="nav-brand">
+    <span class="nav-logo">⚡</span>
+    <span class="nav-name">FocusDex</span>
+  </div>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/sprites.html">Sprites</a>
+    <a href="/demo/" class="nav-demo">Live Demo →</a>
+    <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</nav>
+
+<!-- page header -->
+<section class="section">
+  <h2 class="section-title">Sprite Preview</h2>
+  <p class="section-lead">Every pixel sprite shipped with FocusDex, rendered at 8 different scales.</p>
+  <div id="sprite-grid" class="sprite-grid"></div>
+</section>
+
+<!-- footer -->
+<footer>
+  <div class="footer-main">
+    <span>© FocusDex · MIT licensed · <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">open source</a></span>
+  </div>
+  <div class="footer-tip">
+    <a href="https://cash.app/$Dryeetsolutions" target="_blank" rel="noopener" class="cashapp">💸 Tip $Dryeetsolutions on Cash App</a>
+    <a href="https://github.com/sponsors/bendawg2010" target="_blank" rel="noopener">Sponsor</a>
+  </div>
+  <div class="footer-fam">
+    <span class="fam-label">Notchyverse fam:</span>
+    <a href="#" target="_blank" rel="noopener">NotchPop</a> ·
+    <a href="#" target="_blank" rel="noopener">WallPop</a> ·
+    <a href="#" target="_blank" rel="noopener">Boulder</a> ·
+    <a href="#" target="_blank" rel="noopener">SkyJournal</a> ·
+    <a href="#" target="_blank" rel="noopener">Campfire</a>
+  </div>
+</footer>
+
+<script src="pixel-art.js"></script>
+<script>
+(function () {
+  'use strict';
+  const SCALES = [1, 2, 3, 4, 5, 6, 7, 8];
+  const BASE_PX = 8; // base pixel size at 1x
+
+  function renderSprite(name, scale) {
+    const svg = window.FocusDexPixels.makeSVG(name);
+    if (!svg) return null;
+    const grid = window.FocusDexPixels.SPRITES[name];
+    const cols = grid[0].length;
+    const rows = grid.length;
+    const w = cols * BASE_PX * scale / 4;
+    const h = rows * BASE_PX * scale / 4;
+    svg.style.width = w + 'px';
+    svg.style.height = h + 'px';
+    svg.style.maxWidth = 'none';
+    svg.style.maxHeight = 'none';
+    return svg;
+  }
+
+  function copyGrid(name) {
+    const grid = window.FocusDexPixels.SPRITES[name];
+    if (!grid) return;
+    navigator.clipboard.writeText(grid.join('\n')).then(function () {
+      alert('copied');
+    }).catch(function () {
+      alert('copy failed');
+    });
+  }
+
+  function makeCard(name) {
+    const grid = window.FocusDexPixels.SPRITES[name];
+    const card = document.createElement('div');
+    card.className = 'sprite-card';
+
+    const title = document.createElement('h3');
+    title.textContent = name;
+    card.appendChild(title);
+
+    const meta = document.createElement('div');
+    meta.className = 'sprite-meta';
+    meta.textContent = grid[0].length + '×' + grid.length + ' grid';
+    card.appendChild(meta);
+
+    const scales = document.createElement('div');
+    scales.className = 'sprite-scales';
+    SCALES.forEach(function (s) {
+      const wrap = document.createElement('div');
+      wrap.className = 'sprite-scale';
+      const canvas = document.createElement('div');
+      canvas.className = 'sprite-scale-canvas';
+      const svg = renderSprite(name, s);
+      if (svg) canvas.appendChild(svg);
+      const label = document.createElement('div');
+      label.className = 'sprite-scale-label';
+      label.textContent = s + 'x';
+      wrap.appendChild(canvas);
+      wrap.appendChild(label);
+      scales.appendChild(wrap);
+    });
+    card.appendChild(scales);
+
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'copy grid';
+    btn.addEventListener('click', function () { copyGrid(name); });
+    card.appendChild(btn);
+
+    return card;
+  }
+
+  function init() {
+    if (!window.FocusDexPixels || !window.FocusDexPixels.SPRITES) return;
+    const root = document.getElementById('sprite-grid');
+    Object.keys(window.FocusDexPixels.SPRITES).forEach(function (name) {
+      root.appendChild(makeCard(name));
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
