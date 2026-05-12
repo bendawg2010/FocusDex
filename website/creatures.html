@@ -10,112 +10,72 @@
 <meta property="og:type" content="website">
 <link rel="stylesheet" href="styles.css">
 <style>
-  /* ===== creatures gallery — page-local styles ===== */
   .gallery-note {
-    max-width: 720px; margin: 0 auto 48px;
-    text-align: center;
-    padding: 14px 22px;
-    background: var(--card);
-    border: 1px dashed var(--border);
-    border-radius: 14px;
-    font-size: 13px; color: var(--text-dim);
-    font-style: italic;
+    max-width: 720px; margin: 0 auto 48px; text-align: center;
+    padding: 14px 22px; background: var(--card);
+    border: 1px dashed var(--border); border-radius: 14px;
+    font-size: 13px; color: var(--text-dim); font-style: italic;
   }
   .gallery-note strong { color: var(--text); font-style: normal; }
-
-  .family-block {
-    max-width: 1200px;
-    margin: 0 auto 56px;
-    padding: 0 32px;
-  }
+  .family-block { max-width: 1200px; margin: 0 auto 56px; padding: 0 32px; }
   .family-row {
-    display: grid;
-    grid-template-columns: 280px repeat(5, 1fr);
-    gap: 14px;
-    align-items: stretch;
+    display: grid; grid-template-columns: 280px repeat(5, 1fr);
+    gap: 14px; align-items: stretch;
   }
   @media (max-width: 1024px) {
     .family-row { grid-template-columns: 1fr 1fr 1fr; }
     .family-header { grid-column: 1 / -1; }
   }
-  @media (max-width: 560px) {
-    .family-row { grid-template-columns: 1fr 1fr; }
-  }
-
+  @media (max-width: 560px) { .family-row { grid-template-columns: 1fr 1fr; } }
   .family-header {
     padding: 22px 20px;
     background: linear-gradient(160deg, rgba(193, 71, 255, 0.12), rgba(71, 160, 255, 0.06));
-    border: 1px solid var(--border);
-    border-radius: 18px;
+    border: 1px solid var(--border); border-radius: 18px;
     display: flex; flex-direction: column; justify-content: center;
   }
   .family-header .family-range {
-    font-size: 12px; font-weight: 800;
-    letter-spacing: 0.12em;
-    color: var(--text-dim);
-    font-feature-settings: "tnum";
-    margin-bottom: 6px;
+    font-size: 12px; font-weight: 800; letter-spacing: 0.12em;
+    color: var(--text-dim); font-feature-settings: "tnum"; margin-bottom: 6px;
   }
   .family-header h3 {
-    font-size: 22px; font-weight: 900;
-    letter-spacing: -0.02em;
-    margin-bottom: 8px;
-    color: var(--text);
+    font-size: 22px; font-weight: 900; letter-spacing: -0.02em;
+    margin-bottom: 8px; color: var(--text);
   }
-  .family-header p {
-    font-size: 13px; color: var(--text-dim); line-height: 1.45;
-  }
-
+  .family-header p { font-size: 13px; color: var(--text-dim); line-height: 1.45; }
   .creature-cell {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 14px 10px 12px;
-    text-align: center;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 14px 10px 12px; text-align: center;
     transition: transform 180ms, background 180ms, box-shadow 180ms;
     display: flex; flex-direction: column; align-items: center; gap: 8px;
-    position: relative;
-    overflow: hidden;
+    position: relative; overflow: hidden;
   }
   .creature-cell:hover {
-    transform: translateY(-3px);
-    background: var(--card-hi);
+    transform: translateY(-3px); background: var(--card-hi);
     box-shadow: 0 10px 28px rgba(193, 71, 255, 0.18);
   }
   .creature-cell .cell-dex {
-    font-size: 11px; font-weight: 800;
-    color: var(--text-dim);
-    letter-spacing: 0.08em;
-    font-feature-settings: "tnum";
+    font-size: 11px; font-weight: 800; color: var(--text-dim);
+    letter-spacing: 0.08em; font-feature-settings: "tnum";
   }
   .creature-cell .cell-art {
-    width: 100%;
-    aspect-ratio: 1;
-    display: flex; align-items: center; justify-content: center;
-    padding: 8px;
-    border-radius: 12px;
+    width: 100%; aspect-ratio: 1; display: flex;
+    align-items: center; justify-content: center;
+    padding: 8px; border-radius: 12px;
     background: linear-gradient(135deg, rgba(193, 71, 255, 0.06), rgba(71, 160, 255, 0.04));
     image-rendering: pixelated;
   }
   .creature-cell .cell-name {
-    font-size: 13px; font-weight: 800;
-    color: var(--text-dim);
+    font-size: 13px; font-weight: 800; color: var(--text-dim);
     letter-spacing: 0.04em;
   }
-  .creature-cell.has-art .cell-name {
-    color: var(--text);
-  }
+  .creature-cell.has-art .cell-name { color: var(--text); }
   .creature-cell.has-art .cell-art {
     background: linear-gradient(135deg, rgba(46, 230, 160, 0.14), rgba(193, 71, 255, 0.10));
   }
-
-  /* silhouette block — tinted by family type */
   .silhouette {
-    width: 70%; aspect-ratio: 1;
-    background: currentColor;
+    width: 70%; aspect-ratio: 1; background: currentColor;
     opacity: 0.28;
     border-radius: 18% 22% 14% 26% / 26% 18% 24% 16%;
-    filter: blur(0.4px);
     animation: silhouettePulse 4s ease-in-out infinite;
     box-shadow: 0 0 30px currentColor;
   }
@@ -123,8 +83,6 @@
     0%, 100% { transform: scale(1); opacity: 0.28; }
     50% { transform: scale(1.04); opacity: 0.38; }
   }
-
-  /* family color tints — applied at row level */
   .fam-starters    { color: var(--mint); }
   .fam-tod         { color: var(--yellow); }
   .fam-app         { color: var(--blue); }
@@ -138,8 +96,6 @@
   .fam-mythical    { color: var(--magenta); }
   .fam-notchyverse { color: var(--mint); }
   .fam-regional    { color: var(--blue); }
-
-  /* family header accent borders */
   .family-header.fam-starters    { border-color: rgba(46, 230, 160, 0.45); }
   .family-header.fam-tod         { border-color: rgba(255, 217, 96, 0.45); }
   .family-header.fam-app         { border-color: rgba(71, 160, 255, 0.45); }
@@ -153,23 +109,17 @@
   .family-header.fam-mythical    { border-color: rgba(193, 71, 255, 0.6); box-shadow: 0 14px 40px rgba(193, 71, 255, 0.22); }
   .family-header.fam-notchyverse { border-color: rgba(46, 230, 160, 0.45); }
   .family-header.fam-regional    { border-color: rgba(71, 160, 255, 0.45); }
-
-  /* the bottom callout */
   .gallery-footer-note {
-    max-width: 820px; margin: 40px auto 0;
-    text-align: center; padding: 28px 24px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    color: var(--text-dim);
-    font-size: 15px;
+    max-width: 820px; margin: 40px auto 0; text-align: center;
+    padding: 28px 24px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 20px;
+    color: var(--text-dim); font-size: 15px;
   }
   .gallery-footer-note strong { color: var(--text); }
 </style>
 </head>
 <body>
 
-<!-- nav -->
 <nav>
   <div class="nav-brand">
     <span class="nav-logo">⚡</span>
@@ -184,18 +134,13 @@
   </div>
 </nav>
 
-<!-- hero -->
 <section class="hero">
   <div class="hero-inner">
     <div class="status-pill">
       <span class="status-dot"></span> 147 creatures · 13 families · art in progress
     </div>
-    <h1 class="hero-title">
-      <span class="grad-text">Catch them all</span>
-    </h1>
-    <p class="hero-tagline">
-      147 creatures across 13 families.
-    </p>
+    <h1 class="hero-title"><span class="grad-text">Catch them all</span></h1>
+    <p class="hero-tagline">147 creatures across 13 families.</p>
     <p class="hero-sub">
       Every creature spawns under different conditions — the time, the app, the weather, the streak.
       Some only appear during a real solar eclipse. Some are locked to your birthday. Some only spawn in Tokyo.
@@ -203,251 +148,18 @@
   </div>
 </section>
 
-<!-- art note -->
 <div class="gallery-note">
-  <strong>Heads up:</strong> Only the three starters have sprite art so far. The rest are silhouette placeholders — more art coming as Claude Design generates it.
+  <strong>Heads up:</strong> only the three starters have sprite art so far. The rest are silhouette placeholders — more art coming as Claude Design generates it.
 </div>
 
-<!-- ====================================================================
-     THE 13 FAMILIES
-     ==================================================================== -->
+<div id="gallery-mount"></div>
 
-<!-- 1. Starters -->
-<section class="family-block">
-  <div class="family-row fam-starters">
-    <div class="family-header fam-starters">
-      <div class="family-range">#001 — #009</div>
-      <h3>Starters</h3>
-      <p>Codesprite, Inkling, and Pixibrush evolution lines. Pick one. Stick with it the whole year.</p>
-    </div>
-    <div class="creature-cell has-art">
-      <div class="cell-dex">#001</div>
-      <div class="cell-art"><div data-pixel-art="codesprite"></div></div>
-      <div class="cell-name">Codesprite</div>
-    </div>
-    <div class="creature-cell">
-      <div class="cell-dex">#002</div>
-      <div class="cell-art"><div class="silhouette"></div></div>
-      <div class="cell-name">???</div>
-    </div>
-    <div class="creature-cell">
-      <div class="cell-dex">#003</div>
-      <div class="cell-art"><div class="silhouette"></div></div>
-      <div class="cell-name">???</div>
-    </div>
-    <div class="creature-cell has-art">
-      <div class="cell-dex">#004</div>
-      <div class="cell-art"><div data-pixel-art="inkling"></div></div>
-      <div class="cell-name">Inkling</div>
-    </div>
-    <div class="creature-cell has-art">
-      <div class="cell-dex">#007</div>
-      <div class="cell-art"><div data-pixel-art="pixibrush"></div></div>
-      <div class="cell-name">Pixibrush</div>
-    </div>
-  </div>
-</section>
-
-<!-- 2. Time-of-Day -->
-<section class="family-block">
-  <div class="family-row fam-tod">
-    <div class="family-header fam-tod">
-      <div class="family-range">#010 — #024</div>
-      <h3>Time-of-Day</h3>
-      <p>Spawns shift across the day — Dawn types at sunrise, Insomniacs only between 2–5am.</p>
-    </div>
-    <div class="creature-cell"><div class="cell-dex">#010</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#013</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#016</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#020</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#024</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-  </div>
-</section>
-
-<!-- 3. App-Context -->
-<section class="family-block">
-  <div class="family-row fam-app">
-    <div class="family-header fam-app">
-      <div class="family-range">#025 — #044</div>
-      <h3>App-Context</h3>
-      <p>Code, Art, Doc, Sound, and Terminal types — the app you're focused in shapes what shows up.</p>
-    </div>
-    <div class="creature-cell"><div class="cell-dex">#025</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#030</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#034</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#038</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#044</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-  </div>
-</section>
-
-<!-- 4. Weather -->
-<section class="family-block">
-  <div class="family-row fam-weather">
-    <div class="family-header fam-weather">
-      <div class="family-range">#045 — #059</div>
-      <h3>Weather</h3>
-      <p>Real-weather API spawns. Storm-types when it's raining at your location, Sun-types on clear days.</p>
-    </div>
-    <div class="creature-cell"><div class="cell-dex">#045</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#048</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#052</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#055</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#059</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-  </div>
-</section>
-
-<!-- 5. Legendaries -->
-<section class="family-block">
-  <div class="family-row fam-legendary">
-    <div class="family-header fam-legendary">
-      <div class="family-range">#060 — #071</div>
-      <h3>Legendaries</h3>
-      <p>Astronomical events and milestones — solar eclipses, supermoons, year-long streaks. Once-a-decade catches.</p>
-    </div>
-    <div class="creature-cell"><div class="cell-dex">#060</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#063</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#066</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#069</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#071</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-  </div>
-</section>
-
-<!-- 6. Food & Beverage -->
-<section class="family-block">
-  <div class="family-row fam-food">
-    <div class="family-header fam-food">
-      <div class="family-range">#072 — #081</div>
-      <h3>Food &amp; Beverage</h3>
-      <p>Lunch-hour spawns only between 11am–1pm. Caffeine line spawns at coffee-shop coordinates.</p>
-    </div>
-    <div class="creature-cell"><div class="cell-dex">#072</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#074</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#076</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#079</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#081</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-  </div>
-</section>
-
-<!-- 7. Meetings -->
-<section class="family-block">
-  <div class="family-row fam-meetings">
-    <div class="family-header fam-meetings">
-      <div class="family-range">#082 — #091</div>
-      <h3>Meetings</h3>
-      <p>Ironic calendar-event creatures. Meeting-types from real events. Skipped meetings turn into rebel-types.</p>
-    </div>
-    <div class="creature-cell"><div class="cell-dex">#082</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#084</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#086</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#089</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#091</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-  </div>
-</section>
-
-<!-- 8. Brain Rot -->
-<section class="family-block">
-  <div class="family-row fam-brainrot">
-    <div class="family-header fam-brainrot">
-      <div class="family-range">#092 — #099</div>
-      <h3>Brain Rot</h3>
-      <p>Italian-brain-rot-style hybrid characters. Doomscroll too long and they appear. Charming. Cursed. Yours forever.</p>
-    </div>
-    <div class="creature-cell"><div class="cell-dex">#092</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#094</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#096</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#098</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#099</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-  </div>
-</section>
-
-<!-- 9. Sleep & Dream -->
-<section class="family-block">
-  <div class="family-row fam-sleep">
-    <div class="family-header fam-sleep">
-      <div class="family-range">#100 — #109</div>
-      <h3>Sleep &amp; Dream</h3>
-      <p>Apple Health overnight catches — Dream-types delivered while you sleep, ready for you in the morning.</p>
-    </div>
-    <div class="creature-cell"><div class="cell-dex">#100</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#102</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#104</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#107</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#109</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-  </div>
-</section>
-
-<!-- 10. Seasonal & Holiday -->
-<section class="family-block">
-  <div class="family-row fam-seasonal">
-    <div class="family-header fam-seasonal">
-      <div class="family-range">#110 — #121</div>
-      <h3>Seasonal &amp; Holiday</h3>
-      <p>Date-locked spawns — Halloween-only ghosts, per-user birthday creatures that only YOU ever see.</p>
-    </div>
-    <div class="creature-cell"><div class="cell-dex">#110</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#113</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#116</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#119</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#121</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-  </div>
-</section>
-
-<!-- 11. Mythicals -->
-<section class="family-block">
-  <div class="family-row fam-mythical">
-    <div class="family-header fam-mythical">
-      <div class="family-range">#122 — #129</div>
-      <h3>Mythicals</h3>
-      <p>Story-unlock and ARG endgame creatures. 365-day streak gates open here. Real-world clues lead the rest.</p>
-    </div>
-    <div class="creature-cell"><div class="cell-dex">#122</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#124</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#126</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#128</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#129</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-  </div>
-</section>
-
-<!-- 12. Notchyverse Crossover -->
-<section class="family-block">
-  <div class="family-row fam-notchyverse">
-    <div class="family-header fam-notchyverse">
-      <div class="family-range">#130 — #137</div>
-      <h3>Notchyverse Crossover</h3>
-      <p>Cross-app rewards from the wider Notchyverse — NotchPop, WallPop, Boulder, SkyJournal, Campfire.</p>
-    </div>
-    <div class="creature-cell"><div class="cell-dex">#130</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#132</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#134</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#136</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#137</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-  </div>
-</section>
-
-<!-- 13. Regional -->
-<section class="family-block">
-  <div class="family-row fam-regional">
-    <div class="family-header fam-regional">
-      <div class="family-range">#138 — #147</div>
-      <h3>Regional</h3>
-      <p>GPS-locked travel exclusives. Tokyo-only. SF-only. Reykjavík-only. Travel to catch them all.</p>
-    </div>
-    <div class="creature-cell"><div class="cell-dex">#138</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#141</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#143</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#145</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-    <div class="creature-cell"><div class="cell-dex">#147</div><div class="cell-art"><div class="silhouette"></div></div><div class="cell-name">???</div></div>
-  </div>
-</section>
-
-<!-- closing note -->
 <div class="gallery-footer-note">
   <strong>147 entries. 13 families. One year.</strong><br>
   The Dex is the diary. Every entry will have the date caught and the project you were focused on.<br>
   Art is being generated and added on a rolling basis — check back as the silhouettes fill in.
 </div>
 
-<!-- cta -->
 <section class="section cta-section" style="padding-top: 80px;">
   <h2 class="section-title reveal">Want first dibs?</h2>
   <p class="section-lead reveal reveal-delay-1">Star the repo. We'll ping you the second v1.0 ships.</p>
@@ -457,7 +169,6 @@
   </div>
 </section>
 
-<!-- footer -->
 <footer>
   <div class="footer-main">
     <span>© FocusDex · MIT licensed · <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">open source</a></span>
@@ -478,29 +189,128 @@
 
 <script src="pixel-art.js"></script>
 <script>
-  /* Gallery: stagger-in cells on scroll for a satisfying reveal. */
+  /* Build the 13-family gallery using safe DOM construction (no innerHTML). */
   (function () {
     'use strict';
+    var FAMILIES = [
+      { key:'starters',    range:'#001 — #009', name:'Starters',
+        desc:'Codesprite, Inkling, and Pixibrush evolution lines. Pick one. Stick with it the whole year.',
+        cells:[ {dex:'#001',name:'Codesprite',sprite:'codesprite'},
+                {dex:'#002'},{dex:'#003'},
+                {dex:'#004',name:'Inkling',sprite:'inkling'},
+                {dex:'#007',name:'Pixibrush',sprite:'pixibrush'} ] },
+      { key:'tod',         range:'#010 — #024', name:'Time-of-Day',
+        desc:'Spawns shift across the day — Dawn types at sunrise, Insomniacs only between 2–5am.',
+        cells:[{dex:'#010'},{dex:'#013'},{dex:'#016'},{dex:'#020'},{dex:'#024'}] },
+      { key:'app',         range:'#025 — #044', name:'App-Context',
+        desc:'Code, Art, Doc, Sound, and Terminal types — the app you\'re focused in shapes what shows up.',
+        cells:[{dex:'#025'},{dex:'#030'},{dex:'#034'},{dex:'#038'},{dex:'#044'}] },
+      { key:'weather',     range:'#045 — #059', name:'Weather',
+        desc:'Real-weather API spawns. Storm-types when it\'s raining at your location, Sun-types on clear days.',
+        cells:[{dex:'#045'},{dex:'#048'},{dex:'#052'},{dex:'#055'},{dex:'#059'}] },
+      { key:'legendary',   range:'#060 — #071', name:'Legendaries',
+        desc:'Astronomical events and milestones — solar eclipses, supermoons, year-long streaks. Once-a-decade catches.',
+        cells:[{dex:'#060'},{dex:'#063'},{dex:'#066'},{dex:'#069'},{dex:'#071'}] },
+      { key:'food',        range:'#072 — #081', name:'Food & Beverage',
+        desc:'Lunch-hour spawns only between 11am–1pm. Caffeine line spawns at coffee-shop coordinates.',
+        cells:[{dex:'#072'},{dex:'#074'},{dex:'#076'},{dex:'#079'},{dex:'#081'}] },
+      { key:'meetings',    range:'#082 — #091', name:'Meetings',
+        desc:'Ironic calendar-event creatures. Meeting-types from real events. Skipped meetings turn into rebel-types.',
+        cells:[{dex:'#082'},{dex:'#084'},{dex:'#086'},{dex:'#089'},{dex:'#091'}] },
+      { key:'brainrot',    range:'#092 — #099', name:'Brain Rot',
+        desc:'Italian-brain-rot-style hybrid characters. Doomscroll too long and they appear. Charming. Cursed. Yours forever.',
+        cells:[{dex:'#092'},{dex:'#094'},{dex:'#096'},{dex:'#098'},{dex:'#099'}] },
+      { key:'sleep',       range:'#100 — #109', name:'Sleep & Dream',
+        desc:'Apple Health overnight catches — Dream-types delivered while you sleep, ready for you in the morning.',
+        cells:[{dex:'#100'},{dex:'#102'},{dex:'#104'},{dex:'#107'},{dex:'#109'}] },
+      { key:'seasonal',    range:'#110 — #121', name:'Seasonal & Holiday',
+        desc:'Date-locked spawns — Halloween-only ghosts, per-user birthday creatures that only YOU ever see.',
+        cells:[{dex:'#110'},{dex:'#113'},{dex:'#116'},{dex:'#119'},{dex:'#121'}] },
+      { key:'mythical',    range:'#122 — #129', name:'Mythicals',
+        desc:'Story-unlock and ARG endgame creatures. 365-day streak gates open here. Real-world clues lead the rest.',
+        cells:[{dex:'#122'},{dex:'#124'},{dex:'#126'},{dex:'#128'},{dex:'#129'}] },
+      { key:'notchyverse', range:'#130 — #137', name:'Notchyverse Crossover',
+        desc:'Cross-app rewards from the wider Notchyverse — NotchPop, WallPop, Boulder, SkyJournal, Campfire.',
+        cells:[{dex:'#130'},{dex:'#132'},{dex:'#134'},{dex:'#136'},{dex:'#137'}] },
+      { key:'regional',    range:'#138 — #147', name:'Regional',
+        desc:'GPS-locked travel exclusives. Tokyo-only. SF-only. Reykjavík-only. Travel to catch them all.',
+        cells:[{dex:'#138'},{dex:'#141'},{dex:'#143'},{dex:'#145'},{dex:'#147'}] }
+    ];
+
+    function el(tag, cls) {
+      var n = document.createElement(tag);
+      if (cls) n.className = cls;
+      return n;
+    }
+    function elText(tag, cls, text) {
+      var n = el(tag, cls);
+      n.textContent = text;
+      return n;
+    }
+
+    var mount = document.getElementById('gallery-mount');
+    if (!mount) return;
+
+    FAMILIES.forEach(function (fam) {
+      var section = el('section', 'family-block');
+      var row = el('div', 'family-row fam-' + fam.key);
+
+      var header = el('div', 'family-header fam-' + fam.key);
+      header.appendChild(elText('div', 'family-range', fam.range));
+      header.appendChild(elText('h3', null, fam.name));
+      header.appendChild(elText('p', null, fam.desc));
+      row.appendChild(header);
+
+      fam.cells.forEach(function (cell) {
+        var hasArt = !!cell.sprite;
+        var cellEl = el('div', 'creature-cell' + (hasArt ? ' has-art' : ''));
+        cellEl.appendChild(elText('div', 'cell-dex', cell.dex));
+        var art = el('div', 'cell-art');
+        if (hasArt) {
+          var slot = el('div', null);
+          slot.setAttribute('data-pixel-art', cell.sprite);
+          art.appendChild(slot);
+        } else {
+          art.appendChild(el('div', 'silhouette'));
+        }
+        cellEl.appendChild(art);
+        cellEl.appendChild(elText('div', 'cell-name', cell.name || '???'));
+        row.appendChild(cellEl);
+      });
+
+      section.appendChild(row);
+      mount.appendChild(section);
+    });
+
+    /* Render sprite art into freshly-mounted slots. */
+    if (window.FocusDexPixels && typeof window.FocusDexPixels.makeSVG === 'function') {
+      mount.querySelectorAll('[data-pixel-art]').forEach(function (slot) {
+        var svg = window.FocusDexPixels.makeSVG(slot.getAttribute('data-pixel-art'));
+        if (svg) slot.appendChild(svg);
+      });
+    }
+
+    /* Stagger-in reveal on scroll. */
     if (typeof IntersectionObserver !== 'function') return;
-    var cells = document.querySelectorAll('.creature-cell, .family-header');
-    cells.forEach(function (c) {
+    var targets = mount.querySelectorAll('.creature-cell, .family-header');
+    targets.forEach(function (c) {
       c.style.opacity = '0';
       c.style.transform = 'translateY(16px)';
       c.style.transition = 'opacity 520ms cubic-bezier(0.2,0.7,0.2,1), transform 520ms cubic-bezier(0.2,0.7,0.2,1)';
     });
     var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry, i) {
+      entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
-        var el = entry.target;
-        var sibs = Array.prototype.slice.call(el.parentNode.children);
-        var idx = sibs.indexOf(el);
-        el.style.transitionDelay = Math.min(idx, 6) * 60 + 'ms';
-        el.style.opacity = '1';
-        el.style.transform = 'translateY(0)';
-        io.unobserve(el);
+        var elNode = entry.target;
+        var sibs = Array.prototype.slice.call(elNode.parentNode.children);
+        var idx = sibs.indexOf(elNode);
+        elNode.style.transitionDelay = Math.min(idx, 6) * 60 + 'ms';
+        elNode.style.opacity = '1';
+        elNode.style.transform = 'translateY(0)';
+        io.unobserve(elNode);
       });
     }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
-    cells.forEach(function (c) { io.observe(c); });
+    targets.forEach(function (c) { io.observe(c); });
   })();
 </script>
 

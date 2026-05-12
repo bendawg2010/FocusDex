@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FocusDex — Promo</title>
+<style>
+  :root {
+    --pink: #FF6B6B; --magenta: #C147FF; --blue: #47A0FF;
+    --mint: #2EE6A0; --yellow: #FFD960; --bg: #06010f; --bg2: #0c0420;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background: linear-gradient(180deg, var(--bg) 0%, #1a0830 50%, var(--bg2) 100%);
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "Helvetica Neue", sans-serif;
+    min-height: 100vh;
+    display: grid; place-items: center;
+    overflow: hidden;
+    image-rendering: pixelated;
+  }
+  /* Frame is 1080x1080 — record/screenshot at this size */
+  .frame {
+    width: 1080px; height: 1080px;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 40%, rgba(193,71,255,0.25) 0%, transparent 50%),
+                radial-gradient(ellipse at 30% 80%, rgba(71,160,255,0.2) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 70%, rgba(46,230,160,0.18) 0%, transparent 55%),
+                linear-gradient(180deg, #06010f 0%, #1a0830 50%, #2a0b4a 100%);
+    transform-origin: center;
+  }
+  /* Scale down for viewing */
+  @media (max-width: 1100px) {
+    .frame { transform: scale(calc(100vw / 1100)); }
+  }
+
+  /* drifting orbs */
+  .orb {
+    position: absolute; border-radius: 50%; filter: blur(80px);
+    pointer-events: none; animation: drift 14s ease-in-out infinite;
+  }
+  .orb.a { width: 600px; height: 600px; top: -100px; right: -100px; background: var(--magenta); opacity: 0.35; }
+  .orb.b { width: 700px; height: 700px; bottom: -200px; left: -150px; background: var(--blue); opacity: 0.3; animation-delay: -7s; }
+  @keyframes drift {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(30px, -40px) scale(1.1); }
+  }
+
+  /* star field */
+  .stars {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 12% 22%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 27% 71%, #fff 50%, transparent 51%),
+      radial-gradient(2px 2px at 44% 14%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 61% 41%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 77% 8%, #fff 50%, transparent 51%),
+      radial-gradient(2px 2px at 84% 64%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 9% 86%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 91% 31%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 52% 92%, #fff 50%, transparent 51%);
+    opacity: 0.65;
+    animation: twinkle 3s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { 0% { opacity: 0.4; } 100% { opacity: 0.85; } }
+
+  /* status pill at top */
+  .top-pill {
+    position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+    padding: 12px 24px; border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    font-size: 22px; font-weight: 800; letter-spacing: 0.04em;
+    display: flex; align-items: center; gap: 12px;
+    backdrop-filter: blur(8px);
+  }
+  .dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--mint); box-shadow: 0 0 16px var(--mint);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.6);opacity:0.5} }
+
+  /* hero wordmark */
+  .wordmark {
+    position: absolute; top: 150px; left: 0; right: 0; text-align: center;
+  }
+  .wordmark h1 {
+    font-size: 200px; font-weight: 900; letter-spacing: -0.04em; line-height: 0.95;
+    background: linear-gradient(90deg, var(--pink), var(--magenta), var(--blue), var(--mint), var(--yellow), var(--pink));
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: grad 6s linear infinite;
+    text-shadow: 0 0 40px rgba(193,71,255,0.4);
+  }
+  @keyframes grad { 0%{background-position: 0% center} 100%{background-position: 300% center} }
+
+  .tagline {
+    position: absolute; top: 360px; left: 0; right: 0; text-align: center;
+    font-size: 44px; font-weight: 800; color: #fff;
+    text-shadow: 0 4px 0 rgba(0,0,0,0.5);
+  }
+  .tagline em { color: var(--mint); font-style: italic; }
+
+  /* Center demo area — Notchy + creatures + pokeball */
+  .center {
+    position: absolute; top: 480px; left: 50%; transform: translateX(-50%);
+    width: 700px; height: 280px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 40px;
+  }
+
+  /* Pixel sprite container */
+  .sprite {
+    width: 200px; height: 200px;
+    display: flex; align-items: center; justify-content: center;
+    image-rendering: pixelated;
+    animation: bob 2.6s ease-in-out infinite;
+  }
+  .sprite svg { width: 100%; height: 100%; }
+  .sprite.delay1 { animation-delay: 0.4s; }
+  .sprite.delay2 { animation-delay: 0.8s; }
+  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)} }
+
+  /* Throw arc dashes */
+  .arc {
+    position: absolute; top: 540px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 200px; pointer-events: none;
+  }
+
+  /* Bottom block — features + CTA */
+  .features {
+    position: absolute; bottom: 240px; left: 0; right: 0; text-align: center;
+    display: flex; justify-content: center; gap: 32px; padding: 0 60px;
+    flex-wrap: wrap;
+  }
+  .feat {
+    padding: 14px 22px; border-radius: 18px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    font-size: 22px; font-weight: 800;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .feat .icon { font-size: 28px; }
+  .feat.mint { color: var(--mint); border-color: rgba(46,230,160,0.4); }
+  .feat.magenta { color: var(--magenta); border-color: rgba(193,71,255,0.4); }
+  .feat.yellow { color: var(--yellow); border-color: rgba(255,217,96,0.4); }
+  .feat.pink { color: var(--pink); border-color: rgba(255,107,107,0.4); }
+
+  /* Bottom CTA */
+  .cta {
+    position: absolute; bottom: 60px; left: 0; right: 0; text-align: center;
+  }
+  .url {
+    display: inline-block;
+    font-size: 56px; font-weight: 900;
+    background: linear-gradient(135deg, var(--pink), var(--magenta));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+  }
+  .sub {
+    margin-top: 6px;
+    font-size: 22px; font-weight: 700;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Confetti specks */
+  .confetti {
+    position: absolute; pointer-events: none;
+    inset: 0;
+  }
+  .confetti span {
+    position: absolute; width: 10px; height: 14px; border-radius: 1px;
+    animation: fall 4s linear infinite;
+  }
+  @keyframes fall {
+    0% { transform: translateY(-40px) rotate(0); opacity: 0; }
+    10% { opacity: 1; }
+    100% { transform: translateY(1100px) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="orb a"></div>
+  <div class="orb b"></div>
+  <div class="stars"></div>
+
+  <div class="confetti" id="confetti"></div>
+
+  <div class="top-pill">
+    <span class="dot"></span>
+    macOS · free · MIT · v1.0 incoming
+  </div>
+
+  <div class="wordmark"><h1>FocusDex</h1></div>
+  <div class="tagline">Catch creatures by <em>focusing</em>.</div>
+
+  <div class="center">
+    <div class="sprite" data-sprite="codesprite"></div>
+    <div class="sprite delay1" data-sprite="inkling"></div>
+    <div class="sprite delay2" data-sprite="pixibrush"></div>
+  </div>
+
+  <svg class="arc" viewBox="0 0 600 200">
+    <path d="M 80,180 Q 300,-20 520,180" stroke="#FFD960" stroke-width="3" stroke-dasharray="6 6" fill="none" opacity="0.7"/>
+    <circle cx="80" cy="180" r="14" fill="url(#focusball)"/>
+    <defs>
+      <radialGradient id="focusball">
+        <stop offset="0%" stop-color="#fff"/>
+        <stop offset="100%" stop-color="#2EE6A0"/>
+      </radialGradient>
+    </defs>
+  </svg>
+
+  <div class="features">
+    <div class="feat mint"><span class="icon">⏱</span> Focus → earn balls</div>
+    <div class="feat magenta"><span class="icon">🐾</span> Catch on break</div>
+    <div class="feat yellow"><span class="icon">⚡</span> 147 creatures</div>
+    <div class="feat pink"><span class="icon">🔥</span> Track your year</div>
+  </div>
+
+  <div class="cta">
+    <div class="url">focusdex.pages.dev</div>
+    <div class="sub">github.com/bendawg2010/FocusDex · MIT</div>
+  </div>
+</div>
+
+<script src="pixel-art.js"></script>
+<script>
+(function(){
+  // Render pixel sprites
+  document.querySelectorAll('[data-sprite]').forEach(function(el){
+    var name = el.getAttribute('data-sprite');
+    if (window.FocusDexPixels) {
+      var svg = window.FocusDexPixels.makeSVG(name);
+      if (svg) el.appendChild(svg);
+    }
+  });
+
+  // Generate confetti
+  var c = document.getElementById('confetti');
+  var colors = ['#FF6B6B','#C147FF','#47A0FF','#2EE6A0','#FFD960'];
+  for (var i = 0; i < 40; i++) {
+    var s = document.createElement('span');
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.background = colors[i % colors.length];
+    s.style.animationDelay = (Math.random() * 4) + 's';
+    s.style.animationDuration = (3 + Math.random() * 2) + 's';
+    c.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>
