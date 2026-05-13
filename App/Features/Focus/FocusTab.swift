@@ -376,10 +376,14 @@ private struct BadgeChip: View {
 
 // MARK: - Safari Mode (catching)
 
+private enum SafariSubPhase { case overworld, battle }
+
 private struct SafariView: View {
     @EnvironmentObject var focus: FocusManager
     @EnvironmentObject var dex: DexStore
-    @State private var currentIndex: Int = 0
+    @State private var subPhase: SafariSubPhase = .overworld
+    @State private var current: Creature? = nil
+    @State private var spawnQueue: [Creature] = []
     @State private var throwing: Bool = false
     @State private var revealCard: Creature? = nil
     @State private var confettiID = UUID()
@@ -387,24 +391,19 @@ private struct SafariView: View {
     @State private var statusText: String = ""
     @State private var ranAway: Bool = false
 
-    private var current: Creature? {
-        guard currentIndex < focus.pendingSpawns.count else { return nil }
-        return focus.pendingSpawns[currentIndex]
-    }
-
     var body: some View {
         ZStack {
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 HStack {
                     AnimatedGradientText(
-                        text: "SAFARI ZONE",
+                        text: subPhase == .overworld ? "ROUTE 1" : "WILD ENCOUNTER",
                         font: .system(size: 13, weight: .black, design: .monospaced)
                     ).kerning(2)
                     Spacer()
-                    if focus.pendingSpawns.count > 0 {
-                        Text("\(min(currentIndex + 1, focus.pendingSpawns.count))/\(focus.pendingSpawns.count)")
-                            .font(.system(size: 10, weight: .bold, design: .monospaced))
-                            .foregroundStyle(.secondary)
+                    if subPhase == .overworld {
+                        Label("\(spawnQueue.count)", systemImage: "leaf.fill")
+                            .font(.system(size: 10, weight: .black, design: .monospaced))
+                            .foregroundStyle(Theme.mint)
                     }
                     Button(action: { focus.dismissSafari() }) {
                         Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
@@ -414,47 +413,42 @@ private struct SafariView: View {
                 }
                 .padding(.horizontal, 16).padding(.top, 8)
 
-                // Encounter area
-                ZStack {
-                    MeadowBG()
-                    if let c = current {
-                        WildEncounter(creature: c, throwing: throwing, ranAway: ranAway)
-                    } else {
-                        VStack(spacing: 8) {
-                            Text("🌾").font(.system(size: 48))
-                            Text("The grass is quiet now.")
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                .foregroundStyle(.white)
+                if subPhase == .overworld {
+                    OverworldView(onEncounter: triggerEncounter, onLeave: { focus.dismissSafari() })
+                        .padding(.horizontal, 6)
+                        .padding(.bottom, 6)
+                } else {
+                    // Battle view
+                    ZStack {
+                        MeadowBG()
+                        if let c = current {
+                            WildEncounter(creature: c, throwing: throwing, ranAway: ranAway)
                         }
                     }
-                    EncounterBanner(count: focus.pendingSpawns.count)
-                        .frame(maxHeight: .infinity, alignment: .top)
-                        .padding(.top, 8)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .strokeBorder(Color(hex: "06010f"), lineWidth: 4)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 11)
-                                .strokeBorder(Color.white.opacity(0.9), lineWidth: 2)
-                                .padding(3)
-                        )
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .padding(.horizontal, 8)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .strokeBorder(Color(hex: "06010f"), lineWidth: 4)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 11)
+                                    .strokeBorder(Color.white.opacity(0.9), lineWidth: 2)
+                                    .padding(3)
+                            )
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .padding(.horizontal, 8)
 
-                // Gen-1 dialog box
-                Gen1DialogBox(
-                    statusText: statusText.isEmpty ? defaultStatus() : statusText,
-                    creature: current,
-                    canThrow: current != nil && focus.totalBalls > 0 && !throwing,
-                    ballCount: focus.totalBalls,
-                    onThrow: { throwBall() },
-                    onRun: { advanceToNext() }
-                )
-                .padding(.horizontal, 8)
-                .padding(.bottom, 8)
+                    Gen1DialogBox(
+                        statusText: statusText.isEmpty ? defaultStatus() : statusText,
+                        creature: current,
+                        canThrow: current != nil && focus.totalBalls > 0 && !throwing,
+                        ballCount: focus.totalBalls,
+                        onThrow: { throwBall() },
+                        onRun: { backToOverworld() }
+                    )
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 8)
+                }
             }
 
             if showConfetti {
@@ -465,17 +459,53 @@ private struct SafariView: View {
             if let rev = revealCard {
                 CatchRevealCard(creature: rev) {
                     withAnimation(.spring()) { revealCard = nil }
-                    advanceToNext()
+                    backToOverworld()
                 }
                 .transition(.scale.combined(with: .opacity))
                 .zIndex(20)
+            }
+        }
+        .onAppear {
+            // Seed the spawn queue once from the pending spawns FocusManager generated
+            if spawnQueue.isEmpty {
+                spawnQueue = focus.pendingSpawns
             }
         }
     }
 
     private func defaultStatus() -> String {
         if let c = current { return "A wild \(c.name.uppercased()) appeared!" }
-        return "No more wild creatures."
+        return "..."
+    }
+
+    private func triggerEncounter() {
+        guard !spawnQueue.isEmpty else { return }
+        let next = spawnQueue.removeFirst()
+        current = next
+        statusText = ""
+        ranAway = false
+        throwing = false
+        SoundFX.play(.start)
+        withAnimation(.easeInOut(duration: 0.3)) {
+            subPhase = .battle
+        }
+    }
+
+    private func backToOverworld() {
+        current = nil
+        statusText = ""
+        ranAway = false
+        throwing = false
+        if spawnQueue.isEmpty {
+            // No more encounters — auto-leave safari after a beat
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                focus.dismissSafari()
+            }
+        } else {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                subPhase = .overworld
+            }
+        }
     }
 
     private func throwBall() {
@@ -507,23 +537,244 @@ private struct SafariView: View {
                 ranAway = true
                 statusText = "\(c.name.uppercased()) broke free!"
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
-                    ranAway = false
-                    advanceToNext()
+                    backToOverworld()
                 }
             }
         }
     }
 
-    private func advanceToNext() {
-        statusText = ""
-        ranAway = false
-        if currentIndex + 1 < focus.pendingSpawns.count {
-            currentIndex += 1
-        } else {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                focus.dismissSafari()
+}
+
+// MARK: - Overworld (walk-around tile map, Gen-1 style)
+
+/// Tile types in the overworld map.
+/// 0 = grass · 1 = tall grass (encounter) · 2 = tree · 3 = rock · 4 = path
+private let OVERWORLD_MAP: [[Int]] = [
+    [0,2,0,1,1,1,0,0,0,2,0],
+    [2,0,0,1,1,0,0,1,1,0,0],
+    [0,0,4,4,4,4,0,1,1,1,0],
+    [0,0,4,0,0,4,4,4,0,0,2],
+    [0,1,4,0,0,0,0,4,4,4,4],  // path running through
+    [0,1,4,0,3,0,0,0,0,1,0],
+    [2,0,4,4,0,0,1,1,0,1,1],
+    [0,1,1,4,0,0,1,1,1,0,0],
+    [0,1,1,0,0,2,0,1,0,0,2],
+]
+private let TILE_SIZE: CGFloat = 30
+
+/// Trainer/player sprite (16×16, designed to read as a small explorer).
+private let TRAINER_SPRITE: [String] = [
+    "................",
+    "....kkkkkk......",
+    "...kpppppppk....",
+    "..kpyyyyyyypk...",
+    "..kpyyyyyyypk...",
+    "..kkkkkkkkkk....",
+    "..kKwwKKwwKk....",
+    "..kKKKKKKKKk....",
+    "..kKKqqqqKKk....",
+    "..kKqKKKKqKk....",
+    "..kKKbbbbKKk....",
+    "..kKbbbbbbKk....",
+    "..kKbbbbbbKk....",
+    "..kKkkKKkkKk....",
+    "..kKK..KKKKk....",
+    "................",
+]
+
+private struct OverworldView: View {
+    let onEncounter: () -> Void
+    let onLeave: () -> Void
+
+    @State private var px: Int = 5
+    @State private var py: Int = 4
+    @State private var facing: Direction = .down
+    @State private var monitor: Any? = nil
+    @State private var stepCount: Int = 0
+    @State private var grassRustle: (Int, Int)? = nil
+
+    private enum Direction { case up, down, left, right }
+
+    private var cols: Int { OVERWORLD_MAP[0].count }
+    private var rows: Int { OVERWORLD_MAP.count }
+
+    var body: some View {
+        ZStack {
+            // Tile map
+            TileMapCanvas(tiles: OVERWORLD_MAP, tileSize: TILE_SIZE)
+
+            // Grass rustle overlay (when player steps into tall grass)
+            if let (rx, ry) = grassRustle {
+                GrassRustle()
+                    .frame(width: TILE_SIZE, height: TILE_SIZE)
+                    .position(
+                        x: (CGFloat(rx) + 0.5) * TILE_SIZE,
+                        y: (CGFloat(ry) + 0.5) * TILE_SIZE
+                    )
+                    .allowsHitTesting(false)
+            }
+
+            // Player sprite
+            PixelArt(grid: TRAINER_SPRITE, scale: 1.5)
+                .position(
+                    x: (CGFloat(px) + 0.5) * TILE_SIZE,
+                    y: (CGFloat(py) + 0.5) * TILE_SIZE
+                )
+                .animation(.easeOut(duration: 0.14), value: px)
+                .animation(.easeOut(duration: 0.14), value: py)
+
+            // Bottom hint overlay
+            VStack {
+                Spacer()
+                HStack {
+                    Text("← → ↑ ↓  WALK    Q  LEAVE")
+                        .font(.system(size: 9, weight: .black, design: .monospaced))
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(Color(hex: "fff7df"))
+                        .overlay(Rectangle().strokeBorder(Color(hex: "06010f"), lineWidth: 2))
+                        .foregroundStyle(Color(hex: "06010f"))
+                    Spacer()
+                }
+            }
+            .padding(8)
+        }
+        .frame(width: CGFloat(cols) * TILE_SIZE, height: CGFloat(rows) * TILE_SIZE)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .strokeBorder(Color(hex: "06010f"), lineWidth: 3)
+        )
+        .onAppear(perform: installKeyMonitor)
+        .onDisappear(perform: removeKeyMonitor)
+    }
+
+    private func installKeyMonitor() {
+        monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            switch event.keyCode {
+            case 123: tryMove(dx: -1, dy: 0, facing: .left);  return nil
+            case 124: tryMove(dx:  1, dy: 0, facing: .right); return nil
+            case 125: tryMove(dx: 0, dy:  1, facing: .down);  return nil
+            case 126: tryMove(dx: 0, dy: -1, facing: .up);    return nil
+            case 12:  onLeave(); return nil // Q
+            default:  return event
             }
         }
+    }
+    private func removeKeyMonitor() {
+        if let m = monitor { NSEvent.removeMonitor(m); monitor = nil }
+    }
+
+    private func tryMove(dx: Int, dy: Int, facing newFacing: Direction) {
+        let nx = px + dx
+        let ny = py + dy
+        guard ny >= 0, ny < rows, nx >= 0, nx < cols else { return }
+        let tile = OVERWORLD_MAP[ny][nx]
+        // 2 = tree, 3 = rock — impassable
+        guard tile != 2 && tile != 3 else { return }
+        px = nx; py = ny
+        facing = newFacing
+        stepCount += 1
+        // Tall grass: rustle and roll for encounter
+        if tile == 1 {
+            grassRustle = (nx, ny)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                if grassRustle?.0 == nx && grassRustle?.1 == ny { grassRustle = nil }
+            }
+            // 22% chance per step into tall grass
+            if Double.random(in: 0...1) < 0.22 {
+                Haptics.tick()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    onEncounter()
+                }
+            }
+        }
+    }
+}
+
+private struct TileMapCanvas: View {
+    let tiles: [[Int]]
+    let tileSize: CGFloat
+
+    var body: some View {
+        Canvas { ctx, size in
+            for (r, row) in tiles.enumerated() {
+                for (c, tile) in row.enumerated() {
+                    let rect = CGRect(
+                        x: CGFloat(c) * tileSize,
+                        y: CGFloat(r) * tileSize,
+                        width: tileSize, height: tileSize
+                    )
+                    drawTile(&ctx, rect: rect, type: tile)
+                }
+            }
+        }
+    }
+
+    private func drawTile(_ ctx: inout GraphicsContext, rect: CGRect, type: Int) {
+        switch type {
+        case 1:
+            // Tall grass — darker green with X pattern
+            ctx.fill(Path(rect), with: .color(Color(hex: "4a8f4a")))
+            let dark = Color(hex: "1f5f1f")
+            // 5 V/X grass blade marks
+            let marks: [(CGFloat, CGFloat)] = [(8, 6), (16, 4), (22, 8), (10, 16), (20, 18), (14, 22)]
+            for (x, y) in marks {
+                let p = Path(CGRect(x: rect.minX + x, y: rect.minY + y, width: 2, height: 4))
+                ctx.fill(p, with: .color(dark))
+            }
+        case 2:
+            // Tree — dark green canopy with brown trunk
+            ctx.fill(Path(rect), with: .color(Color(hex: "7fc97f")))
+            // Canopy circle
+            let canopy = Path(ellipseIn: CGRect(x: rect.minX + 2, y: rect.minY + 1, width: rect.width - 4, height: rect.height - 8))
+            ctx.fill(canopy, with: .color(Color(hex: "1aa370")))
+            ctx.stroke(canopy, with: .color(Color(hex: "06010f")), lineWidth: 1.5)
+            // Trunk
+            let trunk = Path(CGRect(x: rect.midX - 3, y: rect.maxY - 8, width: 6, height: 6))
+            ctx.fill(trunk, with: .color(Color(hex: "5c3a1e")))
+        case 3:
+            // Rock — gray ellipse
+            ctx.fill(Path(rect), with: .color(Color(hex: "7fc97f")))
+            let rock = Path(ellipseIn: CGRect(x: rect.minX + 4, y: rect.minY + 8, width: rect.width - 8, height: rect.height - 12))
+            ctx.fill(rock, with: .color(Color(hex: "9a9a9a")))
+            ctx.stroke(rock, with: .color(Color(hex: "06010f")), lineWidth: 1.5)
+            // Highlight
+            let hi = Path(ellipseIn: CGRect(x: rect.minX + 7, y: rect.minY + 10, width: 6, height: 3))
+            ctx.fill(hi, with: .color(Color(hex: "c0c0c0")))
+        case 4:
+            // Sand path
+            ctx.fill(Path(rect), with: .color(Color(hex: "d4b878")))
+            // Speckles
+            let dark = Color(hex: "a89060")
+            for (x, y) in [(6, 8), (18, 10), (12, 20), (22, 22), (4, 22)] {
+                ctx.fill(Path(CGRect(x: rect.minX + CGFloat(x), y: rect.minY + CGFloat(y), width: 1, height: 1)),
+                         with: .color(dark))
+            }
+        default:
+            // Plain grass
+            ctx.fill(Path(rect), with: .color(Color(hex: "7fc97f")))
+            // 2 darker dots
+            ctx.fill(Path(CGRect(x: rect.minX + 6, y: rect.minY + 10, width: 1, height: 1)),
+                     with: .color(Color(hex: "5fa75f")))
+            ctx.fill(Path(CGRect(x: rect.minX + 18, y: rect.minY + 20, width: 1, height: 1)),
+                     with: .color(Color(hex: "5fa75f")))
+        }
+    }
+}
+
+private struct GrassRustle: View {
+    @State private var shake: CGFloat = 0
+    var body: some View {
+        Text("!")
+            .font(.system(size: 18, weight: .black, design: .monospaced))
+            .foregroundStyle(Color(hex: "FFD960"))
+            .shadow(color: Color(hex: "06010f"), radius: 0, x: 1, y: 1)
+            .offset(x: shake, y: -16)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.1).repeatCount(5, autoreverses: true)) {
+                    shake = 4
+                }
+            }
     }
 }
 
@@ -534,9 +785,8 @@ private struct WildEncounter: View {
     let throwing: Bool
     let ranAway: Bool
     @State private var bob: CGFloat = 0
-    @State private var ballY: CGFloat = 0
-    @State private var wobble: CGFloat = 0
-    @State private var startBallY: CGFloat = 240
+    @State private var ballY: CGFloat = 200
+    @State private var ballX: CGFloat = -120
 
     private var typeColor: Color {
         switch creature.primary {
@@ -555,55 +805,151 @@ private struct WildEncounter: View {
 
     var body: some View {
         ZStack {
-            // Creature standing on grass platform, centered
-            VStack(spacing: 0) {
-                Spacer().frame(height: 30)
-                Spacer()
-                PixelArt(
-                    grid: Sprites.forCreature(id: creature.id),
-                    scale: 6,
-                    glowColor: typeColor.opacity(0.75),
-                    glowRadius: 18
-                )
-                .offset(y: bob)
-                .opacity(throwing ? 0.55 : (ranAway ? 0 : 1))
-                .scaleEffect(ranAway ? 0.7 : 1)
-                .onAppear {
-                    bob = 0
-                    withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
-                        bob = -8
-                    }
+            // Wild Pokemon nameplate (upper-left)
+            VStack {
+                HStack {
+                    WildNameplate(creature: creature)
+                        .padding(.leading, 10)
+                        .padding(.top, 10)
+                    Spacer()
                 }
-                GrassPlatform()
-                    .frame(width: 130, height: 30)
-                    .offset(y: -4)
-                Spacer().frame(height: 80)
+                Spacer()
             }
 
-            // Pokeball arc when thrown
+            // Wild creature on a dirt platform (upper-right)
+            VStack {
+                HStack {
+                    Spacer()
+                    ZStack(alignment: .bottom) {
+                        // Dirt platform (curved oval with chunky border)
+                        Ellipse()
+                            .fill(Color(hex: "c2a878"))
+                            .overlay(
+                                Ellipse()
+                                    .fill(Color(hex: "e3c89c"))
+                                    .frame(width: 110 * 0.65, height: 22 * 0.55)
+                                    .offset(y: -3)
+                            )
+                            .overlay(
+                                Ellipse().strokeBorder(Color(hex: "06010f"), lineWidth: 2)
+                            )
+                            .frame(width: 110, height: 26)
+                            .offset(y: 6)
+                        // Creature sprite, bobbing
+                        PixelArt(
+                            grid: Sprites.forCreature(id: creature.id),
+                            scale: 5,
+                            glowColor: typeColor.opacity(0.5),
+                            glowRadius: 10
+                        )
+                        .offset(y: bob - 14)
+                        .opacity(throwing ? 0.5 : (ranAway ? 0 : 1))
+                        .scaleEffect(ranAway ? 0.5 : 1)
+                        .onAppear {
+                            withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
+                                bob = -4
+                            }
+                        }
+                    }
+                    .padding(.trailing, 24)
+                    .padding(.top, 22)
+                }
+                Spacer()
+            }
+
+            // Pokeball arc (low-left → high-right toward creature)
             if throwing {
                 Circle()
-                    .fill(LinearGradient(colors: [.white, typeColor], startPoint: .top, endPoint: .bottom))
-                    .frame(width: 22, height: 22)
-                    .overlay(Circle().strokeBorder(.white, lineWidth: 1.5))
-                    .overlay(
-                        Rectangle().fill(Color(hex: "06010f").opacity(0.4)).frame(height: 2)
+                    .fill(
+                        LinearGradient(
+                            stops: [.init(color: Color(hex: "FF6B6B"), location: 0),
+                                    .init(color: Color(hex: "FF6B6B"), location: 0.45),
+                                    .init(color: Color(hex: "06010f"), location: 0.46),
+                                    .init(color: Color(hex: "06010f"), location: 0.54),
+                                    .init(color: .white, location: 0.55),
+                                    .init(color: .white, location: 1.0)],
+                            startPoint: .top, endPoint: .bottom
+                        )
                     )
-                    .offset(x: wobble, y: ballY)
+                    .frame(width: 22, height: 22)
+                    .overlay(Circle().strokeBorder(Color(hex: "06010f"), lineWidth: 1.5))
+                    .overlay(Circle().fill(Color.white).frame(width: 5, height: 5))
+                    .offset(x: ballX, y: ballY)
                     .onAppear {
-                        ballY = startBallY
-                        wobble = 0
-                        withAnimation(.timingCurve(0.3, 0.0, 0.6, 1.0, duration: 0.5)) {
-                            ballY = -20
+                        ballX = -120; ballY = 200
+                        withAnimation(.timingCurve(0.3, 0.0, 0.6, 1.0, duration: 0.55)) {
+                            ballX = 80
+                            ballY = -50
                         }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
-                            withAnimation(.spring(response: 0.18, dampingFraction: 0.4).repeatCount(3, autoreverses: true)) {
-                                wobble = 10
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            withAnimation(.spring(response: 0.16, dampingFraction: 0.4).repeatCount(3, autoreverses: true)) {
+                                ballX += 8
                             }
                         }
                     }
             }
         }
+    }
+}
+
+private struct WildNameplate: View {
+    let creature: Creature
+    private var level: Int {
+        switch creature.rarity {
+        case .common: return 8
+        case .uncommon: return 18
+        case .rare: return 32
+        case .legendary: return 55
+        case .mythic: return 70
+        }
+    }
+    private var hpPct: CGFloat {
+        switch creature.rarity {
+        case .common: return 0.85
+        case .uncommon: return 0.65
+        case .rare: return 0.45
+        case .legendary: return 0.25
+        case .mythic: return 0.12
+        }
+    }
+    private var hpColor: Color {
+        hpPct > 0.5 ? Color(hex: "2EE6A0") : (hpPct > 0.25 ? Color(hex: "FFD960") : Color(hex: "FF6B6B"))
+    }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(creature.name.uppercased())
+                    .font(.system(size: 11, weight: .black, design: .monospaced))
+                Spacer(minLength: 6)
+                Text("Lv\(level)")
+                    .font(.system(size: 10, weight: .black, design: .monospaced))
+            }
+            HStack(spacing: 4) {
+                Text("HP")
+                    .font(.system(size: 8, weight: .black, design: .monospaced))
+                    .foregroundStyle(Color(hex: "c87060"))
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 1)
+                        .fill(Color(hex: "06010f").opacity(0.2))
+                        .frame(width: 70, height: 6)
+                    RoundedRectangle(cornerRadius: 1)
+                        .fill(hpColor)
+                        .frame(width: 70 * hpPct, height: 6)
+                }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 1)
+                        .strokeBorder(Color(hex: "06010f"), lineWidth: 1)
+                        .frame(width: 70, height: 6)
+                )
+            }
+        }
+        .foregroundStyle(Color(hex: "06010f"))
+        .padding(.horizontal, 10).padding(.vertical, 6)
+        .background(Color(hex: "fff7df"))
+        .overlay(
+            Rectangle().strokeBorder(Color(hex: "06010f"), lineWidth: 2.5)
+        )
+        .frame(width: 140)
     }
 }
 
@@ -831,55 +1177,80 @@ private struct FloatingCreature: View {
 
 private struct MeadowBG: View {
     var body: some View {
+        VStack(spacing: 0) {
+            // Solid pokemon-blue sky
+            Color(hex: "8cd0f0")
+                .frame(height: 100)
+                .overlay(
+                    // One simple cloud silhouette in the sky
+                    HStack {
+                        Spacer()
+                        CloudBlob()
+                            .padding(.trailing, 40)
+                            .padding(.top, 14)
+                    }
+                )
+            // Sharp horizon line
+            Color(hex: "06010f").frame(height: 2)
+            // Green grass ground with pixel-dot texture
+            ZStack {
+                Color(hex: "7fc97f")
+                DottedGrassTexture()
+            }
+            .frame(maxHeight: .infinity)
+        }
+    }
+}
+
+private struct CloudBlob: View {
+    var body: some View {
         ZStack {
-            // Solid sky bands (Gen-1 horizon style)
-            VStack(spacing: 0) {
-                LinearGradient(colors: [Color(hex: "1a0830"), Color(hex: "6b1f7a")], startPoint: .top, endPoint: .bottom)
-                    .frame(height: 60)
-                LinearGradient(colors: [Color(hex: "6b1f7a"), Color(hex: "C147FF"), Color(hex: "FF6B6B")], startPoint: .top, endPoint: .bottom)
-                    .frame(height: 100)
-                LinearGradient(colors: [Color(hex: "FF6B6B"), Color(hex: "FFD960")], startPoint: .top, endPoint: .bottom)
-                    .frame(height: 50)
-                Color(hex: "2a6a3a")
-                    .frame(minHeight: 0, maxHeight: .infinity)
+            // Build a chunky cloud from three filled rects (pixel-clouds vibe)
+            HStack(spacing: -8) {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.white)
+                    .frame(width: 26, height: 16)
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(Color.white)
+                    .frame(width: 40, height: 22)
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.white)
+                    .frame(width: 26, height: 16)
             }
+            .overlay(
+                HStack(spacing: -8) {
+                    RoundedRectangle(cornerRadius: 14).strokeBorder(Color(hex: "06010f"), lineWidth: 1.5)
+                        .frame(width: 26, height: 16)
+                    RoundedRectangle(cornerRadius: 18).strokeBorder(Color(hex: "06010f"), lineWidth: 1.5)
+                        .frame(width: 40, height: 22)
+                    RoundedRectangle(cornerRadius: 14).strokeBorder(Color(hex: "06010f"), lineWidth: 1.5)
+                        .frame(width: 26, height: 16)
+                }
+            )
+        }
+    }
+}
 
-            // Pixel stars in upper sky
-            StarFieldOverlay()
-                .opacity(0.6)
-                .frame(maxHeight: 100, alignment: .top)
-                .frame(maxHeight: .infinity, alignment: .top)
-
-            // Twin moons (upper-right)
-            VStack {
-                HStack { Spacer(); TwinMoons().padding(.trailing, 22).padding(.top, 10) }
-                Spacer()
+private struct DottedGrassTexture: View {
+    var body: some View {
+        Canvas { ctx, size in
+            let darker = Color(hex: "5fa75f")
+            let dotSize: CGFloat = 1.5
+            var y: CGFloat = 4
+            var even = false
+            while y < size.height {
+                let stride = 14.0
+                var x: CGFloat = even ? 4 : 11
+                while x < size.width {
+                    ctx.fill(Path(CGRect(x: x, y: y, width: dotSize, height: dotSize)),
+                             with: .color(darker))
+                    ctx.fill(Path(CGRect(x: x + 4, y: y + 3, width: dotSize, height: dotSize)),
+                             with: .color(darker))
+                    x += stride
+                }
+                y += 9
+                even.toggle()
             }
-
-            // Pixel mountain range (chunky, flat-color, Gen-1 style)
-            PixelMountains()
-                .frame(height: 60)
-                .frame(maxHeight: .infinity, alignment: .center)
-                .offset(y: 20)
-
-            // Big trees flanking the scene
-            HStack {
-                PixelTree().offset(y: 40)
-                Spacer()
-                PixelTree(flipped: true).offset(y: 50)
-            }
-            .padding(.horizontal, 6)
-            .frame(maxHeight: .infinity, alignment: .bottom)
-
-            // Tiled grass field (square cross pattern, denser than vertical bars)
-            VStack {
-                Spacer()
-                GrassField()
-                    .frame(height: 80)
-            }
-
-            // Mint fireflies
-            FireflyLayer()
         }
     }
 }
