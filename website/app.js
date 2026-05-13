@@ -1,13 +1,80 @@
 /* FocusDex — promo site interactions
-   Smooth scroll · scroll-triggered reveals · animated count-up numbers */
+   Download gate (3-second hold) · smooth scroll · scroll reveals ·
+   count-up numbers · 3D card tilt · orb parallax · Notchy easter egg */
 (function () {
   'use strict';
 
-  // --- Smooth scroll for #anchor links ---
+  // ─── Download gate (3-second hold + Open Anyway warning) ─────────────
+  const gate = document.getElementById('dlGate');
+  const gateClose = document.getElementById('dlGateClose');
+  const gateConfirm = document.getElementById('dlGateConfirm');
+  const gateText = gateConfirm && gateConfirm.querySelector('.dl-gate-btn-text');
+  let gateTimer = null;
+  let gateHref = '';
+
+  function openGate(href) {
+    if (!gate) return;
+    gateHref = href || '#';
+    gate.removeAttribute('hidden');
+    gateConfirm.setAttribute('data-locked', 'true');
+    gateConfirm.setAttribute('href', '#');
+    let remaining = 3;
+    gateText.textContent = 'Read above (' + remaining + 's)…';
+    clearInterval(gateTimer);
+    gateTimer = setInterval(function () {
+      remaining--;
+      if (remaining > 0) {
+        gateText.textContent = 'Read above (' + remaining + 's)…';
+      } else {
+        clearInterval(gateTimer);
+        gateConfirm.removeAttribute('data-locked');
+        gateConfirm.setAttribute('href', gateHref);
+        gateText.textContent = '↓ Download FocusDex.dmg';
+      }
+    }, 1000);
+  }
+
+  function closeGate() {
+    if (!gate) return;
+    gate.setAttribute('hidden', '');
+    clearInterval(gateTimer);
+    gateConfirm.setAttribute('data-locked', 'true');
+    gateConfirm.setAttribute('href', '#');
+    gateText.textContent = 'Read above (3s)…';
+  }
+
+  document.querySelectorAll('[data-download-trigger]').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      openGate(link.getAttribute('href'));
+    });
+  });
+
+  if (gateConfirm) {
+    gateConfirm.addEventListener('click', function (e) {
+      if (gateConfirm.getAttribute('data-locked') === 'true') {
+        e.preventDefault();
+        return;
+      }
+      // Let the <a> navigate the href, then auto-close the modal.
+      setTimeout(closeGate, 600);
+    });
+  }
+  if (gateClose) gateClose.addEventListener('click', closeGate);
+  if (gate) {
+    gate.addEventListener('click', function (e) {
+      if (e.target === gate) closeGate();
+    });
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && gate && !gate.hasAttribute('hidden')) closeGate();
+  });
+
+  // ─── Smooth scroll for #anchor links ────────────────────────────────
   document.querySelectorAll('a[href^="#"]').forEach(function (a) {
     a.addEventListener('click', function (e) {
       const id = a.getAttribute('href');
-      if (id && id.length > 1) {
+      if (id && id.length > 1 && id !== '#') {
         const target = document.querySelector(id);
         if (target) {
           e.preventDefault();
@@ -17,7 +84,7 @@
     });
   });
 
-  // --- Scroll-triggered reveal animation ---
+  // ─── Scroll-triggered reveals ────────────────────────────────────────
   const reveals = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window && reveals.length) {
     const io = new IntersectionObserver(function (entries) {
@@ -33,9 +100,8 @@
     reveals.forEach(function (el) { el.classList.add('is-visible'); });
   }
 
-  // --- Count-up animation on .stat-num (uses data-count or text value) ---
+  // ─── Count-up animation on .stat-num ─────────────────────────────────
   function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
-
   function countUp(el) {
     const text = el.getAttribute('data-count') || el.textContent;
     const match = (text || '').match(/(\d+)/);
@@ -44,16 +110,13 @@
     const suffix = (text || '').replace(/^\d+/, '');
     const duration = 1400;
     const start = performance.now();
-
     function frame(now) {
       const t = Math.min(1, (now - start) / duration);
-      const v = Math.round(easeOut(t) * target);
-      el.textContent = v + suffix;
+      el.textContent = Math.round(easeOut(t) * target) + suffix;
       if (t < 1) requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
   }
-
   const statNums = document.querySelectorAll('.stat-num');
   if ('IntersectionObserver' in window && statNums.length) {
     statNums.forEach(function (el) {
@@ -73,7 +136,7 @@
     statNums.forEach(function (el) { io2.observe(el); });
   }
 
-  // --- Tilt + glow on starter cards ---
+  // ─── 3D tilt on starter cards ────────────────────────────────────────
   document.querySelectorAll('.starter-card').forEach(function (card) {
     card.addEventListener('mousemove', function (e) {
       const rect = card.getBoundingClientRect();
@@ -86,7 +149,7 @@
     });
   });
 
-  // --- Parallax-ish orb drift on mouse movement ---
+  // ─── Orb cursor parallax ─────────────────────────────────────────────
   let raf = null;
   document.addEventListener('mousemove', function (e) {
     if (raf) return;
@@ -99,7 +162,7 @@
     });
   });
 
-  // --- Easter egg: tap Notchy in the notch ---
+  // ─── Easter egg: tap Notchy in the notch mock ───────────────────────
   const notchy = document.querySelector('.notchy-emoji');
   if (notchy) {
     let taps = 0;

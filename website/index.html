@@ -257,6 +257,38 @@
   </div>
 </footer>
 
+<!-- download gate modal -->
+<div id="dlGate" class="dl-gate" hidden role="dialog" aria-modal="true" aria-labelledby="dlGateTitle">
+  <div class="dl-gate-card">
+    <button class="dl-gate-close" id="dlGateClose" type="button" aria-label="Close">×</button>
+    <div class="dl-gate-icon">⚠️</div>
+    <h2 class="dl-gate-title" id="dlGateTitle">Heads up — read this first.</h2>
+    <p class="dl-gate-lead">
+      <strong>Free + open source · MIT licensed.</strong> macOS will say
+      <em>"FocusDex can't be opened because Apple cannot check it for
+      malicious software"</em> the first time. That's because Apple charges
+      <strong>$99/year</strong> for a Developer ID and this app is free.
+      It's safe — every line of code is on
+      <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">GitHub</a>.
+    </p>
+    <ol>
+      <li>Open the DMG → drag <strong>FocusDex.app</strong> to your <strong>Applications</strong> folder.</li>
+      <li>Launch it once → macOS will pop the warning → click <strong>Done</strong>.</li>
+      <li>Go to <strong>System Settings → Privacy &amp; Security</strong> → scroll down → click <strong>Open Anyway</strong>.</li>
+      <li>Re-launch FocusDex → click <strong>Open</strong> on the prompt → 🎉 you're in.</li>
+    </ol>
+    <p class="dl-gate-note">You only do this once. Future opens are normal.</p>
+    <a id="dlGateConfirm" class="btn primary dl-gate-btn" href="#" data-locked="true">
+      <span class="dl-gate-btn-text">Read above (3s)…</span>
+    </a>
+    <div class="dl-gate-tip-row">
+      <a href="https://cash.app/$Dryeetsolutions" target="_blank" rel="noopener" class="cashapp">💸 Tip $Dryeetsolutions</a>
+      <a href="https://github.com/bendawg2010/FocusDex" target="_blank" rel="noopener">⭐ Star on GitHub</a>
+      <a href="https://github.com/sponsors/bendawg2010" target="_blank" rel="noopener">❤️ Sponsor</a>
+    </div>
+  </div>
+</div>
+
 <script src="pixel-art.js"></script>
 <script src="app.js"></script>
 </body>
