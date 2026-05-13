@@ -409,6 +409,7 @@ private struct SafariView: View {
                     .foregroundStyle(.secondary)
 
                 ZStack {
+                    MeadowBG()
                     ForEach(Array(focus.pendingSpawns.enumerated()), id: \.offset) { i, creature in
                         if caught[creature.id] != false {
                             FloatingCreature(
@@ -430,6 +431,8 @@ private struct SafariView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .padding(.horizontal, 10)
 
                 Spacer()
                 BallStockpileRow().padding(.bottom, 10)
@@ -577,6 +580,174 @@ private struct FloatingCreature: View {
         case .spirit: return "❂"
         default: return "✶"
         }
+    }
+}
+
+// MARK: - Meadow background (Gen-1 Pokemon vibe)
+
+private struct MeadowBG: View {
+    @State private var firefly = false
+    var body: some View {
+        ZStack {
+            // Sky gradient — sunset palette
+            LinearGradient(
+                colors: [
+                    Color(hex: "1a0830"),
+                    Color(hex: "6b1f7a"),
+                    Color(hex: "C147FF"),
+                    Color(hex: "FF6B6B"),
+                    Color(hex: "FFD960"),
+                ],
+                startPoint: .top, endPoint: .bottom
+            )
+
+            // Pixel stars in upper sky
+            StarFieldOverlay()
+                .opacity(0.55)
+                .frame(maxHeight: .infinity, alignment: .top)
+
+            // Twin pixel moons (upper-right)
+            VStack { HStack { Spacer(); TwinMoons().padding(.trailing, 28).padding(.top, 14); Spacer().frame(width: 0) }; Spacer() }
+
+            // Distant hills (cut-out silhouette behind the path)
+            HillsShape()
+                .fill(LinearGradient(
+                    colors: [Color(hex: "47A0FF").opacity(0.4), Color(hex: "2a64a8").opacity(0.85)],
+                    startPoint: .top, endPoint: .bottom
+                ))
+                .frame(height: 70)
+                .frame(maxHeight: .infinity, alignment: .center)
+                .offset(y: 30)
+
+            // Meadow ground — bottom 45%
+            VStack(spacing: 0) {
+                Spacer()
+                LinearGradient(
+                    colors: [Color(hex: "2a6a3a"), Color(hex: "1a4a2a")],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .frame(maxHeight: 160)
+            }
+
+            // Tall grass front row
+            VStack {
+                Spacer()
+                TallGrass(count: 36)
+                    .padding(.bottom, 6)
+            }
+
+            // Fireflies (mint sparkles)
+            FireflyLayer()
+        }
+    }
+}
+
+private struct StarFieldOverlay: View {
+    var body: some View {
+        GeometryReader { geo in
+            Canvas { ctx, size in
+                let stars: [(CGFloat, CGFloat, CGFloat)] = [
+                    (0.05, 0.12, 1), (0.15, 0.33, 1), (0.31, 0.22, 1.5),
+                    (0.42, 0.52, 1), (0.51, 0.12, 1), (0.67, 0.21, 1.2),
+                    (0.73, 0.10, 1), (0.79, 0.34, 1), (0.89, 0.18, 1.4),
+                    (0.95, 0.27, 1)
+                ]
+                for (xf, yf, s) in stars {
+                    let rect = CGRect(
+                        x: xf * size.width, y: yf * size.height,
+                        width: s, height: s
+                    )
+                    ctx.fill(Path(rect), with: .color(.white))
+                }
+            }
+        }
+    }
+}
+
+private struct TwinMoons: View {
+    var body: some View {
+        ZStack {
+            // Big yellow moon
+            Circle()
+                .fill(Theme.yellow)
+                .frame(width: 32, height: 32)
+                .overlay(Circle().strokeBorder(Color(hex: "06010f"), lineWidth: 1.5))
+                .shadow(color: Theme.yellow.opacity(0.5), radius: 14)
+            // Small crescent moon offset
+            Circle()
+                .fill(Color(hex: "06010f"))
+                .frame(width: 16, height: 16)
+                .overlay(
+                    Circle()
+                        .stroke(Theme.yellow, lineWidth: 1)
+                )
+                .offset(x: 22, y: 6)
+        }
+    }
+}
+
+private struct HillsShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let w = rect.width, h = rect.height
+        p.move(to: CGPoint(x: 0, y: h))
+        let peaks: [(CGFloat, CGFloat)] = [
+            (0.00, 0.60), (0.08, 0.30), (0.20, 0.55), (0.32, 0.20),
+            (0.50, 0.45), (0.65, 0.25), (0.80, 0.50), (1.00, 0.30)
+        ]
+        for (xf, yf) in peaks {
+            p.addLine(to: CGPoint(x: xf * w, y: yf * h))
+        }
+        p.addLine(to: CGPoint(x: w, y: h))
+        p.closeSubpath()
+        return p
+    }
+}
+
+private struct TallGrass: View {
+    let count: Int
+    var body: some View {
+        HStack(spacing: 1) {
+            ForEach(0..<count, id: \.self) { i in
+                let h: CGFloat = 14 + CGFloat((i * 7) % 14)
+                let c: Color = i % 3 == 0 ? Color(hex: "159a6a") : Theme.mint
+                Rectangle()
+                    .fill(c)
+                    .frame(width: 6, height: h)
+                    .overlay(
+                        Rectangle().fill(Color(hex: "06010f")).frame(height: 2)
+                            .frame(maxHeight: .infinity, alignment: .top)
+                    )
+                    .rotationEffect(.degrees(Double((i % 2 == 0 ? 1.0 : -1.0) * Double(3 + i % 5))))
+            }
+        }
+    }
+}
+
+private struct FireflyLayer: View {
+    @State private var phase = 0.0
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                ForEach(0..<8, id: \.self) { i in
+                    Circle()
+                        .fill(Theme.mint)
+                        .frame(width: 4, height: 4)
+                        .shadow(color: Theme.mint, radius: 4)
+                        .position(
+                            x: geo.size.width * CGFloat(0.08 + Double(i) * 0.11),
+                            y: geo.size.height * CGFloat(0.5 + Double(i % 3) * 0.08)
+                        )
+                        .opacity(0.5 + 0.5 * sin(phase + Double(i)))
+                }
+            }
+            .onAppear {
+                withAnimation(.linear(duration: 4).repeatForever(autoreverses: false)) {
+                    phase = .pi * 2
+                }
+            }
+        }
+        .allowsHitTesting(false)
     }
 }
 
