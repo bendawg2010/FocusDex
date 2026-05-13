@@ -381,6 +381,7 @@ private enum SafariSubPhase { case overworld, battle }
 private struct SafariView: View {
     @EnvironmentObject var focus: FocusManager
     @EnvironmentObject var dex: DexStore
+    @AppStorage(Persistence.Keys.starterId) private var starterId: Int = 0
     @State private var subPhase: SafariSubPhase = .overworld
     @State private var current: Creature? = nil
     @State private var spawnQueue: [Creature] = []
@@ -390,6 +391,49 @@ private struct SafariView: View {
     @State private var showConfetti = false
     @State private var statusText: String = ""
     @State private var ranAway: Bool = false
+    // Battle state
+    @State private var leadCreature: Creature? = nil
+    @State private var wildHP: Int = 0
+    @State private var wildMaxHP: Int = 1
+    @State private var leadHP: Int = 0
+    @State private var leadMaxHP: Int = 1
+    @State private var battleBusy: Bool = false
+    @State private var wildShake: Bool = false
+    @State private var leadShake: Bool = false
+
+    private var leadLevel: Int { max(10, dex.caught.count + 4) }
+    private func wildLevel(for c: Creature) -> Int {
+        switch c.rarity {
+        case .common:    return 5
+        case .uncommon:  return 10
+        case .rare:      return 18
+        case .legendary: return 32
+        case .mythic:    return 50
+        }
+    }
+    private func maxHP(for r: Rarity) -> Int {
+        switch r {
+        case .common:    return 45
+        case .uncommon:  return 60
+        case .rare:      return 85
+        case .legendary: return 130
+        case .mythic:    return 180
+        }
+    }
+    private func resolveLead() -> Creature? {
+        if let s = Creature.starters.first(where: { $0.id == starterId }) { return s }
+        return dex.caught.first ?? Creature.starters.first
+    }
+    private static let advantages: [CreatureType: CreatureType] = [
+        .code: .doc, .doc: .art, .art: .pixel, .pixel: .code,
+        .sound: .glitch, .glitch: .spirit, .spirit: .moon, .moon: .sound,
+        .sun: .storm, .storm: .dream, .dream: .caffeine, .caffeine: .sun,
+    ]
+    private func effectiveness(_ a: CreatureType, _ d: CreatureType) -> Double {
+        if Self.advantages[a] == d { return 2.0 }
+        if Self.advantages[d] == a { return 0.5 }
+        return 1.0
+    }
 
     var body: some View {
         ZStack {
@@ -422,7 +466,24 @@ private struct SafariView: View {
                     ZStack {
                         MeadowBG()
                         if let c = current {
-                            WildEncounter(creature: c, throwing: throwing, ranAway: ranAway)
+                            WildEncounter(
+                                creature: c,
+                                throwing: throwing,
+                                ranAway: ranAway,
+                                hp: wildHP,
+                                maxHP: wildMaxHP,
+                                level: wildLevel(for: c),
+                                shake: wildShake
+                            )
+                        }
+                        if let lead = leadCreature {
+                            LeadCreatureView(
+                                creature: lead,
+                                hp: leadHP,
+                                maxHP: leadMaxHP,
+                                level: leadLevel,
+                                shake: leadShake
+                            )
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -440,9 +501,10 @@ private struct SafariView: View {
 
                     Gen1DialogBox(
                         statusText: statusText.isEmpty ? defaultStatus() : statusText,
-                        creature: current,
-                        canThrow: current != nil && focus.totalBalls > 0 && !throwing,
+                        canFight: current != nil && !battleBusy && leadHP > 0 && wildHP > 0,
+                        canThrow: current != nil && focus.totalBalls > 0 && !throwing && !battleBusy,
                         ballCount: focus.totalBalls,
+                        onFight: { playerAttack() },
                         onThrow: { throwBall() },
                         onRun: { backToOverworld() }
                     )
@@ -478,6 +540,15 @@ private struct SafariView: View {
         return "..."
     }
 
+    private func ballLabel(_ tier: FocusManager.BallTier) -> String {
+        switch tier {
+        case .pokeball: return "POKÉ BALL"
+        case .great:    return "GREAT BALL"
+        case .ultra:    return "ULTRA BALL"
+        case .master:   return "MASTER BALL"
+        }
+    }
+
     private func triggerEncounter(tileCode: Int) {
         guard !spawnQueue.isEmpty else { return }
         spawnQueue.removeFirst()
@@ -492,12 +563,69 @@ private struct SafariView: View {
         let pool = Creature.all.filter { rarities.contains($0.rarity) }
         guard let pick = (pool.randomElement() ?? Creature.all.randomElement()) else { return }
         current = pick
-        statusText = ""
+        leadCreature = resolveLead()
+        wildMaxHP = maxHP(for: pick.rarity)
+        wildHP = wildMaxHP
+        leadMaxHP = 80 + leadLevel * 2
+        leadHP = leadMaxHP
+        battleBusy = false
+        statusText = "A wild \(pick.name.uppercased()) appeared!"
         ranAway = false
         throwing = false
         SoundFX.play(.start)
         withAnimation(.easeInOut(duration: 0.3)) {
             subPhase = .battle
+        }
+    }
+
+    private func playerAttack() {
+        guard let wild = current, let lead = leadCreature, !battleBusy else { return }
+        guard wildHP > 0, leadHP > 0 else { return }
+        battleBusy = true
+        let eff = effectiveness(lead.primary, wild.primary)
+        let dmg = max(1, Int(Double.random(in: 14...22) * eff * (Double(leadLevel) / 25.0)))
+        let effTag: String = eff > 1 ? " It's super effective!" : (eff < 1 ? " Not very effective…" : "")
+        statusText = "\(lead.name.uppercased()) used STRIKE!\(effTag)"
+        SoundFX.play(.ball)
+        withAnimation(.easeInOut(duration: 0.12).repeatCount(3, autoreverses: true)) {
+            wildShake = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            wildShake = false
+            withAnimation(.easeOut(duration: 0.3)) {
+                wildHP = max(0, wildHP - dmg)
+            }
+            Haptics.tick()
+            if wildHP <= 0 {
+                statusText = "Wild \(wild.name.uppercased()) fainted! Got away..."
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+                    backToOverworld()
+                }
+                return
+            }
+            // Wild counter-attack
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                let eff2 = effectiveness(wild.primary, lead.primary)
+                let dmg2 = max(1, Int(Double.random(in: 10...18) * eff2 * (Double(wildLevel(for: wild)) / 25.0)))
+                statusText = "Wild \(wild.name.uppercased()) attacks!"
+                withAnimation(.easeInOut(duration: 0.12).repeatCount(3, autoreverses: true)) {
+                    leadShake = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                    leadShake = false
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        leadHP = max(0, leadHP - dmg2)
+                    }
+                    if leadHP <= 0 {
+                        statusText = "\(lead.name.uppercased()) fainted! You black out…"
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+                            backToOverworld()
+                        }
+                    } else {
+                        battleBusy = false
+                    }
+                }
+            }
         }
     }
 
@@ -519,7 +647,7 @@ private struct SafariView: View {
     }
 
     private func throwBall() {
-        guard let c = current, !throwing else { return }
+        guard let c = current, !throwing, !battleBusy else { return }
         let tier: FocusManager.BallTier = {
             if focus.masterBalls > 0 { return .master }
             if focus.ultraBalls > 0 { return .ultra }
@@ -528,10 +656,15 @@ private struct SafariView: View {
         }()
         guard focus.totalBalls > 0 else { return }
         throwing = true
-        statusText = "You threw a ball..."
-        let success = focus.attemptCatch(c, with: tier)
+        battleBusy = true
+        // Catch rate scales: full HP → 0.4x, fainted → 1.5x. Encourages weakening first.
+        let hpFactor = 1.0 - (Double(wildHP) / Double(max(1, wildMaxHP)))
+        let modifier = 0.4 + hpFactor * 1.1
+        statusText = "You threw a \(ballLabel(tier))!"
+        let success = focus.attemptCatch(c, with: tier, modifier: modifier)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             throwing = false
+            battleBusy = false
             if success {
                 dex.catchCreature(c)
                 confettiID = UUID()
@@ -884,6 +1017,10 @@ private struct WildEncounter: View {
     let creature: Creature
     let throwing: Bool
     let ranAway: Bool
+    let hp: Int
+    let maxHP: Int
+    let level: Int
+    let shake: Bool
     @State private var bob: CGFloat = 0
     @State private var ballY: CGFloat = 200
     @State private var ballX: CGFloat = -120
@@ -908,7 +1045,7 @@ private struct WildEncounter: View {
             // Wild Pokemon nameplate (upper-left)
             VStack {
                 HStack {
-                    WildNameplate(creature: creature)
+                    BattleNameplate(name: creature.name, level: level, hp: hp, maxHP: maxHP, showHPText: false)
                         .padding(.leading, 10)
                         .padding(.top, 10)
                     Spacer()
@@ -943,7 +1080,7 @@ private struct WildEncounter: View {
                             glowColor: typeColor.opacity(0.5),
                             glowRadius: 10
                         )
-                        .offset(y: bob - 14)
+                        .offset(x: shake ? 3 : 0, y: bob - 14)
                         .opacity(throwing ? 0.5 : (ranAway ? 0 : 1))
                         .scaleEffect(ranAway ? 0.5 : 1)
                         .onAppear {
@@ -993,33 +1130,21 @@ private struct WildEncounter: View {
     }
 }
 
-private struct WildNameplate: View {
-    let creature: Creature
-    private var level: Int {
-        switch creature.rarity {
-        case .common: return 8
-        case .uncommon: return 18
-        case .rare: return 32
-        case .legendary: return 55
-        case .mythic: return 70
-        }
-    }
-    private var hpPct: CGFloat {
-        switch creature.rarity {
-        case .common: return 0.85
-        case .uncommon: return 0.65
-        case .rare: return 0.45
-        case .legendary: return 0.25
-        case .mythic: return 0.12
-        }
-    }
+private struct BattleNameplate: View {
+    let name: String
+    let level: Int
+    let hp: Int
+    let maxHP: Int
+    let showHPText: Bool
+
+    private var pct: CGFloat { CGFloat(hp) / CGFloat(max(1, maxHP)) }
     private var hpColor: Color {
-        hpPct > 0.5 ? Color(hex: "2EE6A0") : (hpPct > 0.25 ? Color(hex: "FFD960") : Color(hex: "FF6B6B"))
+        pct > 0.5 ? Color(hex: "2EE6A0") : (pct > 0.25 ? Color(hex: "FFD960") : Color(hex: "FF6B6B"))
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline) {
-                Text(creature.name.uppercased())
+                Text(name.uppercased())
                     .font(.system(size: 11, weight: .black, design: .monospaced))
                 Spacer(minLength: 6)
                 Text("Lv\(level)")
@@ -1035,13 +1160,18 @@ private struct WildNameplate: View {
                         .frame(width: 70, height: 6)
                     RoundedRectangle(cornerRadius: 1)
                         .fill(hpColor)
-                        .frame(width: 70 * hpPct, height: 6)
+                        .frame(width: 70 * pct, height: 6)
                 }
                 .overlay(
                     RoundedRectangle(cornerRadius: 1)
                         .strokeBorder(Color(hex: "06010f"), lineWidth: 1)
                         .frame(width: 70, height: 6)
                 )
+            }
+            if showHPText {
+                Text("\(hp) / \(maxHP)")
+                    .font(.system(size: 8, weight: .heavy, design: .monospaced))
+                    .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
         .foregroundStyle(Color(hex: "06010f"))
@@ -1054,40 +1184,107 @@ private struct WildNameplate: View {
     }
 }
 
+private struct LeadCreatureView: View {
+    let creature: Creature
+    let hp: Int
+    let maxHP: Int
+    let level: Int
+    let shake: Bool
+    @State private var bob: CGFloat = 0
+
+    private var typeColor: Color {
+        switch creature.primary {
+        case .code: return Theme.mint
+        case .art: return Theme.pink
+        case .pixel: return Theme.yellow
+        case .doc: return Theme.blue
+        case .sound: return Theme.magenta
+        case .sun, .spark: return Theme.yellow
+        case .moon, .glitch, .spirit: return Theme.magenta
+        case .dream, .storm: return Theme.blue
+        case .caffeine: return Theme.pink
+        default: return Theme.mint
+        }
+    }
+
+    var body: some View {
+        ZStack {
+            // Lead sprite on dirt platform — lower-LEFT
+            VStack {
+                Spacer()
+                HStack {
+                    ZStack(alignment: .bottom) {
+                        Ellipse()
+                            .fill(Color(hex: "c2a878"))
+                            .overlay(
+                                Ellipse()
+                                    .fill(Color(hex: "e3c89c"))
+                                    .frame(width: 130 * 0.65, height: 26 * 0.55)
+                                    .offset(y: -3)
+                            )
+                            .overlay(Ellipse().strokeBorder(Color(hex: "06010f"), lineWidth: 2))
+                            .frame(width: 130, height: 30)
+                            .offset(y: 4)
+                        PixelArt(
+                            grid: Sprites.forCreature(id: creature.id),
+                            scale: 6,
+                            palette: Sprites.paletteFor(creature: creature),
+                            glowColor: typeColor.opacity(0.5),
+                            glowRadius: 12
+                        )
+                        .offset(x: shake ? -3 : 0, y: bob - 16)
+                        .onAppear {
+                            withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
+                                bob = -3
+                            }
+                        }
+                    }
+                    .padding(.leading, 20)
+                    .padding(.bottom, 8)
+                    Spacer()
+                }
+            }
+
+            // Lead nameplate — lower-RIGHT (above dialog area)
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    BattleNameplate(name: creature.name, level: level, hp: hp, maxHP: maxHP, showHPText: true)
+                        .padding(.trailing, 10)
+                        .padding(.bottom, 12)
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Gen-1 dialog box
 
 private struct Gen1DialogBox: View {
     let statusText: String
-    let creature: Creature?
+    let canFight: Bool
     let canThrow: Bool
     let ballCount: Int
+    let onFight: () -> Void
     let onThrow: () -> Void
     let onRun: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Status text line + (optional) type pill
-            HStack(alignment: .center, spacing: 8) {
-                Text(statusText)
-                    .font(.system(size: 11, weight: .black, design: .monospaced))
-                    .foregroundStyle(Color(hex: "06010f"))
-                    .lineLimit(2)
-                Spacer()
-                if let c = creature {
-                    Text("HP")
-                        .font(.system(size: 8, weight: .black, design: .monospaced))
-                        .foregroundStyle(Color(hex: "06010f"))
-                    // HP indicator (rarity-based: more red = harder catch)
-                    HPIndicator(rarity: c.rarity)
-                }
-            }
+            Text(statusText)
+                .font(.system(size: 11, weight: .black, design: .monospaced))
+                .foregroundStyle(Color(hex: "06010f"))
+                .lineLimit(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            // 2x2 action button grid
             HStack(spacing: 6) {
-                actionButton(label: "THROW BALL", subtitle: "×\(ballCount)", icon: "◉",
+                actionButton(label: "FIGHT", subtitle: "atk", icon: "⚔",
+                             enabled: canFight, action: onFight)
+                actionButton(label: "CATCH", subtitle: "×\(ballCount)", icon: "◉",
                              enabled: canThrow, action: onThrow)
-                actionButton(label: "RUN", subtitle: "skip", icon: "→",
-                             enabled: creature != nil, action: onRun)
+                actionButton(label: "RUN", subtitle: "flee", icon: "→",
+                             enabled: true, action: onRun)
             }
         }
         .padding(10)
@@ -1137,37 +1334,6 @@ private struct Gen1DialogBox: View {
         }
         .disabled(!enabled)
         .buttonStyle(.plain)
-    }
-}
-
-private struct HPIndicator: View {
-    let rarity: Rarity
-    private var pct: CGFloat {
-        switch rarity {
-        case .common: return 0.85
-        case .uncommon: return 0.65
-        case .rare: return 0.45
-        case .legendary: return 0.22
-        case .mythic: return 0.10
-        }
-    }
-    private var color: Color {
-        pct > 0.5 ? Theme.mint : (pct > 0.25 ? Theme.yellow : Theme.pink)
-    }
-    var body: some View {
-        ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(Color(hex: "06010f").opacity(0.18))
-                .frame(width: 50, height: 8)
-            RoundedRectangle(cornerRadius: 2)
-                .fill(color)
-                .frame(width: 50 * pct, height: 8)
-        }
-        .overlay(
-            RoundedRectangle(cornerRadius: 2)
-                .strokeBorder(Color(hex: "06010f"), lineWidth: 1)
-                .frame(width: 50, height: 8)
-        )
     }
 }
 

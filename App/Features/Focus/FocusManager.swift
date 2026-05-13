@@ -184,7 +184,7 @@ final class FocusManager: ObservableObject {
 
     // MARK: - Catch attempt
 
-    func attemptCatch(_ creature: Creature, with tier: BallTier) -> Bool {
+    func attemptCatch(_ creature: Creature, with tier: BallTier, modifier: Double = 1.0) -> Bool {
         switch tier {
         case .pokeball:   guard pokeballs > 0 else { return false }; pokeballs -= 1
         case .great:      guard greatBalls > 0 else { return false }; greatBalls -= 1
@@ -213,7 +213,8 @@ final class FocusManager: ObservableObject {
             case .master:   return 1.0
             }
         }()
-        let success = Double.random(in: 0...1) < min(0.98, base + bonus)
+        let rate = min(0.98, (base + bonus) * modifier)
+        let success = Double.random(in: 0...1) < rate
         SoundFX.play(success ? .catchOK : .catchNo)
         if success { Haptics.levelUp() } else { Haptics.tick() }
         return success
