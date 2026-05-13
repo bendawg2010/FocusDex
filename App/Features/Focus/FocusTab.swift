@@ -425,14 +425,30 @@ private struct SafariView: View {
                         if caught[c.id] == false {
                             Text("💨 \(c.name) got away")
                                 .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6).padding(.vertical, 2)
+                                .background(Color(hex: "06010f").opacity(0.7), in: Capsule())
                                 .offset(y: CGFloat(c.id % 50) - 20)
                         }
                     }
+                    // Pokemon-style "A WILD ... APPEARED!" banner
+                    EncounterBanner(count: focus.pendingSpawns.count)
+                        .frame(maxHeight: .infinity, alignment: .top)
+                        .padding(.top, 8)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .padding(.horizontal, 10)
+                .overlay(
+                    // Gen-1 chunky frame: black outer, white inner
+                    RoundedRectangle(cornerRadius: 14)
+                        .strokeBorder(Color(hex: "06010f"), lineWidth: 4)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 11)
+                                .strokeBorder(Color.white.opacity(0.9), lineWidth: 2)
+                                .padding(3)
+                        )
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .padding(.horizontal, 8)
 
                 Spacer()
                 BallStockpileRow().padding(.bottom, 10)
@@ -507,6 +523,12 @@ private struct FloatingCreature: View {
 
     var body: some View {
         ZStack {
+            // Grass platform under the creature (oval pixel disc)
+            GrassPlatform()
+                .frame(width: 80, height: 22)
+                .offset(x: baseX, y: baseY + 30)
+                .opacity(caught ? 0 : 1)
+
             PixelArt(
                 grid: Sprites.forCreature(id: creature.id),
                 scale: 4,
@@ -586,58 +608,158 @@ private struct FloatingCreature: View {
 // MARK: - Meadow background (Gen-1 Pokemon vibe)
 
 private struct MeadowBG: View {
-    @State private var firefly = false
     var body: some View {
         ZStack {
-            // Sky gradient — sunset palette
-            LinearGradient(
-                colors: [
-                    Color(hex: "1a0830"),
-                    Color(hex: "6b1f7a"),
-                    Color(hex: "C147FF"),
-                    Color(hex: "FF6B6B"),
-                    Color(hex: "FFD960"),
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
+            // Solid sky bands (Gen-1 horizon style)
+            VStack(spacing: 0) {
+                LinearGradient(colors: [Color(hex: "1a0830"), Color(hex: "6b1f7a")], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 60)
+                LinearGradient(colors: [Color(hex: "6b1f7a"), Color(hex: "C147FF"), Color(hex: "FF6B6B")], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 100)
+                LinearGradient(colors: [Color(hex: "FF6B6B"), Color(hex: "FFD960")], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 50)
+                Color(hex: "2a6a3a")
+                    .frame(minHeight: 0, maxHeight: .infinity)
+            }
 
             // Pixel stars in upper sky
             StarFieldOverlay()
-                .opacity(0.55)
+                .opacity(0.6)
+                .frame(maxHeight: 100, alignment: .top)
                 .frame(maxHeight: .infinity, alignment: .top)
 
-            // Twin pixel moons (upper-right)
-            VStack { HStack { Spacer(); TwinMoons().padding(.trailing, 28).padding(.top, 14); Spacer().frame(width: 0) }; Spacer() }
-
-            // Distant hills (cut-out silhouette behind the path)
-            HillsShape()
-                .fill(LinearGradient(
-                    colors: [Color(hex: "47A0FF").opacity(0.4), Color(hex: "2a64a8").opacity(0.85)],
-                    startPoint: .top, endPoint: .bottom
-                ))
-                .frame(height: 70)
-                .frame(maxHeight: .infinity, alignment: .center)
-                .offset(y: 30)
-
-            // Meadow ground — bottom 45%
-            VStack(spacing: 0) {
+            // Twin moons (upper-right)
+            VStack {
+                HStack { Spacer(); TwinMoons().padding(.trailing, 22).padding(.top, 10) }
                 Spacer()
-                LinearGradient(
-                    colors: [Color(hex: "2a6a3a"), Color(hex: "1a4a2a")],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .frame(maxHeight: 160)
             }
 
-            // Tall grass front row
+            // Pixel mountain range (chunky, flat-color, Gen-1 style)
+            PixelMountains()
+                .frame(height: 60)
+                .frame(maxHeight: .infinity, alignment: .center)
+                .offset(y: 20)
+
+            // Big trees flanking the scene
+            HStack {
+                PixelTree().offset(y: 40)
+                Spacer()
+                PixelTree(flipped: true).offset(y: 50)
+            }
+            .padding(.horizontal, 6)
+            .frame(maxHeight: .infinity, alignment: .bottom)
+
+            // Tiled grass field (square cross pattern, denser than vertical bars)
             VStack {
                 Spacer()
-                TallGrass(count: 36)
-                    .padding(.bottom, 6)
+                GrassField()
+                    .frame(height: 80)
             }
 
-            // Fireflies (mint sparkles)
+            // Mint fireflies
             FireflyLayer()
+        }
+    }
+}
+
+private struct PixelMountains: View {
+    var body: some View {
+        Canvas { ctx, size in
+            let w = size.width, h = size.height
+            let backColor = Color(hex: "2a64a8").opacity(0.85)
+            let frontColor = Color(hex: "47A0FF").opacity(0.7)
+            // Two layered ridges with stair-stepped peaks (chunky pixel feel)
+            func ridge(amp: CGFloat, steps: Int, color: Color, offsetX: CGFloat = 0) {
+                var path = Path()
+                path.move(to: CGPoint(x: 0, y: h))
+                let stepW = w / CGFloat(steps)
+                for i in 0..<steps {
+                    let phase = sin((CGFloat(i) + offsetX) * 0.7)
+                    let y = h - amp * (0.4 + 0.5 * phase * phase)
+                    let yQuant = round(y / 4) * 4 // quantize for pixel feel
+                    path.addLine(to: CGPoint(x: CGFloat(i) * stepW, y: yQuant))
+                    path.addLine(to: CGPoint(x: CGFloat(i + 1) * stepW, y: yQuant))
+                }
+                path.addLine(to: CGPoint(x: w, y: h))
+                path.closeSubpath()
+                ctx.fill(path, with: .color(color))
+            }
+            ridge(amp: h * 0.95, steps: 14, color: backColor, offsetX: 0)
+            ridge(amp: h * 0.65, steps: 20, color: frontColor, offsetX: 3)
+        }
+    }
+}
+
+private struct PixelTree: View {
+    var flipped: Bool = false
+    var body: some View {
+        let cells: [String] = [
+            "...kk...",
+            "..kCCk..",
+            ".kCCCCk.",
+            "kCGGGCCk",
+            "kGCCGGCk",
+            "kCCGCGCk",
+            ".kCGCCk.",
+            ".kCCCCk.",
+            "..kCCk..",
+            "...kk...",
+            "...kk...",
+            "..bBBk..",
+        ]
+        // Reuse PixelArt with custom palette for tree colors
+        let palette: [Character: Color] = [
+            "k": Color(hex: "06010f"),
+            "C": Color(hex: "159a6a"),
+            "G": Color(hex: "1aa370"),
+            "B": Color(hex: "4a2a14"),
+            "b": Color(hex: "6a3a24"),
+            ".": .clear,
+        ]
+        PixelArt(grid: cells, scale: 4, palette: palette)
+            .scaleEffect(x: flipped ? -1 : 1)
+            .shadow(color: .black.opacity(0.45), radius: 4, x: 0, y: 4)
+    }
+}
+
+private struct GrassField: View {
+    var body: some View {
+        Canvas { ctx, size in
+            let w = size.width, h = size.height
+            // Background field
+            ctx.fill(Path(CGRect(x: 0, y: 0, width: w, height: h)),
+                     with: .color(Color(hex: "1a4a2a")))
+            // Tiled grass tufts: cross-shaped 8x8 sprites repeated
+            let tile: CGFloat = 16
+            let cols = Int(ceil(w / tile))
+            let rows = Int(ceil(h / tile))
+            for r in 0..<rows {
+                for c in 0..<cols {
+                    let baseX = CGFloat(c) * tile + (r % 2 == 0 ? 0 : tile / 2)
+                    let baseY = CGFloat(r) * tile
+                    let mint = (c + r) % 3 == 0
+                    let color = mint ? Color(hex: "2EE6A0") : Color(hex: "159a6a")
+                    // 5-blade tuft pattern
+                    let blades: [(CGFloat, CGFloat, CGFloat, CGFloat)] = [
+                        (2, 4, 1, 6),   // left
+                        (5, 2, 1, 8),   // center tall
+                        (4, 5, 1, 5),
+                        (7, 4, 1, 6),
+                        (3, 6, 1, 4),
+                    ]
+                    for (bx, by, bw, bh) in blades {
+                        ctx.fill(Path(CGRect(
+                            x: baseX + bx, y: baseY + by,
+                            width: bw, height: bh
+                        )), with: .color(color))
+                    }
+                    // Dark base shadow line
+                    ctx.fill(Path(CGRect(
+                        x: baseX + 2, y: baseY + tile - 2,
+                        width: 8, height: 2
+                    )), with: .color(Color(hex: "06010f")))
+                }
+            }
         }
     }
 }
@@ -748,6 +870,72 @@ private struct FireflyLayer: View {
             }
         }
         .allowsHitTesting(false)
+    }
+}
+
+private struct GrassPlatform: View {
+    var body: some View {
+        Canvas { ctx, size in
+            let w = size.width, h = size.height
+            let cx = w / 2, cy = h / 2
+            // Outline (dark)
+            var outline = Path(ellipseIn: CGRect(x: 0, y: 0, width: w, height: h))
+            ctx.fill(outline, with: .color(Color(hex: "06010f")))
+            // Mint fill (slightly smaller)
+            outline = Path(ellipseIn: CGRect(x: 2, y: 2, width: w - 4, height: h - 4))
+            ctx.fill(outline, with: .color(Color(hex: "159a6a")))
+            // Highlight (top half lighter)
+            let hi = Path(ellipseIn: CGRect(x: 4, y: 3, width: w - 8, height: (h - 6) * 0.6))
+            ctx.fill(hi, with: .color(Color(hex: "2EE6A0")))
+            // Speckles
+            for i in 0..<6 {
+                let x = cx + cos(Double(i) * 1.0) * (w * 0.30)
+                let y = cy + sin(Double(i) * 1.0) * (h * 0.20)
+                ctx.fill(Path(CGRect(x: x, y: y, width: 2, height: 2)),
+                         with: .color(Color(hex: "9af2ce")))
+            }
+        }
+    }
+}
+
+private struct EncounterBanner: View {
+    let count: Int
+    @State private var flash = false
+    @State private var visible = true
+
+    var body: some View {
+        Group {
+            if visible {
+                HStack(spacing: 6) {
+                    Text("⚡")
+                    Text(count == 1 ? "A WILD CREATURE APPEARED!" : "WILD CREATURES APPEARED!")
+                        .font(.system(size: 10, weight: .black, design: .monospaced))
+                        .kerning(0.8)
+                    Text("⚡")
+                }
+                .padding(.horizontal, 10).padding(.vertical, 4)
+                .background(
+                    Color(hex: "06010f").opacity(0.85),
+                    in: RoundedRectangle(cornerRadius: 6)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .strokeBorder(Color.white, lineWidth: 1.5)
+                )
+                .foregroundStyle(flash ? Theme.yellow : .white)
+                .shadow(color: Theme.yellow.opacity(0.7), radius: 8)
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 0.3).repeatForever(autoreverses: true)) {
+                        flash.toggle()
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
+                        withAnimation(.easeOut(duration: 0.4)) {
+                            visible = false
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
