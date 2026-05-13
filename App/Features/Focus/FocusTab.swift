@@ -379,66 +379,60 @@ private struct BadgeChip: View {
 private struct SafariView: View {
     @EnvironmentObject var focus: FocusManager
     @EnvironmentObject var dex: DexStore
-    @State private var caught: [Int: Bool] = [:]
-    @State private var throwing: Int? = nil
+    @State private var currentIndex: Int = 0
+    @State private var throwing: Bool = false
     @State private var revealCard: Creature? = nil
     @State private var confettiID = UUID()
     @State private var showConfetti = false
+    @State private var statusText: String = ""
+    @State private var ranAway: Bool = false
+
+    private var current: Creature? {
+        guard currentIndex < focus.pendingSpawns.count else { return nil }
+        return focus.pendingSpawns[currentIndex]
+    }
 
     var body: some View {
         ZStack {
-            VStack(spacing: 10) {
+            VStack(spacing: 8) {
                 HStack {
                     AnimatedGradientText(
-                        text: "SAFARI MODE",
-                        font: .system(size: 13, weight: .black, design: .rounded)
-                    )
-                    .kerning(2)
+                        text: "SAFARI ZONE",
+                        font: .system(size: 13, weight: .black, design: .monospaced)
+                    ).kerning(2)
                     Spacer()
-                    Button(action: { focus.dismissSafari() }) {
-                        Image(systemName: "xmark.circle.fill")
+                    if focus.pendingSpawns.count > 0 {
+                        Text("\(min(currentIndex + 1, focus.pendingSpawns.count))/\(focus.pendingSpawns.count)")
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
                             .foregroundStyle(.secondary)
+                    }
+                    Button(action: { focus.dismissSafari() }) {
+                        Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
                     .keyboardShortcut(.cancelAction)
                 }
                 .padding(.horizontal, 16).padding(.top, 8)
 
-                Text("Tap a creature to throw your best ball.")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-
+                // Encounter area
                 ZStack {
                     MeadowBG()
-                    ForEach(Array(focus.pendingSpawns.enumerated()), id: \.offset) { i, creature in
-                        if caught[creature.id] != false {
-                            FloatingCreature(
-                                creature: creature,
-                                index: i,
-                                throwing: throwing == creature.id,
-                                caught: caught[creature.id] == true,
-                                onTap: { attemptCatch(creature) }
-                            )
-                        }
-                    }
-                    ForEach(focus.pendingSpawns, id: \.id) { c in
-                        if caught[c.id] == false {
-                            Text("💨 \(c.name) got away")
-                                .font(.caption2)
+                    if let c = current {
+                        WildEncounter(creature: c, throwing: throwing, ranAway: ranAway)
+                    } else {
+                        VStack(spacing: 8) {
+                            Text("🌾").font(.system(size: 48))
+                            Text("The grass is quiet now.")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
                                 .foregroundStyle(.white)
-                                .padding(.horizontal, 6).padding(.vertical, 2)
-                                .background(Color(hex: "06010f").opacity(0.7), in: Capsule())
-                                .offset(y: CGFloat(c.id % 50) - 20)
                         }
                     }
-                    // Pokemon-style "A WILD ... APPEARED!" banner
                     EncounterBanner(count: focus.pendingSpawns.count)
                         .frame(maxHeight: .infinity, alignment: .top)
                         .padding(.top, 8)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .overlay(
-                    // Gen-1 chunky frame: black outer, white inner
                     RoundedRectangle(cornerRadius: 14)
                         .strokeBorder(Color(hex: "06010f"), lineWidth: 4)
                         .overlay(
@@ -450,8 +444,17 @@ private struct SafariView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .padding(.horizontal, 8)
 
-                Spacer()
-                BallStockpileRow().padding(.bottom, 10)
+                // Gen-1 dialog box
+                Gen1DialogBox(
+                    statusText: statusText.isEmpty ? defaultStatus() : statusText,
+                    creature: current,
+                    canThrow: current != nil && focus.totalBalls > 0 && !throwing,
+                    ballCount: focus.totalBalls,
+                    onThrow: { throwBall() },
+                    onRun: { advanceToNext() }
+                )
+                .padding(.horizontal, 8)
+                .padding(.bottom, 8)
             }
 
             if showConfetti {
@@ -462,6 +465,7 @@ private struct SafariView: View {
             if let rev = revealCard {
                 CatchRevealCard(creature: rev) {
                     withAnimation(.spring()) { revealCard = nil }
+                    advanceToNext()
                 }
                 .transition(.scale.combined(with: .opacity))
                 .zIndex(20)
@@ -469,36 +473,254 @@ private struct SafariView: View {
         }
     }
 
-    private func attemptCatch(_ creature: Creature) {
-        guard caught[creature.id] == nil else { return }
+    private func defaultStatus() -> String {
+        if let c = current { return "A wild \(c.name.uppercased()) appeared!" }
+        return "No more wild creatures."
+    }
 
+    private func throwBall() {
+        guard let c = current, !throwing else { return }
         let tier: FocusManager.BallTier = {
             if focus.masterBalls > 0 { return .master }
             if focus.ultraBalls > 0 { return .ultra }
             if focus.greatBalls > 0 { return .great }
             return .pokeball
         }()
-
         guard focus.totalBalls > 0 else { return }
-
-        throwing = creature.id
-        let success = focus.attemptCatch(creature, with: tier)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-            throwing = nil
-            caught[creature.id] = success
+        throwing = true
+        statusText = "You threw a ball..."
+        let success = focus.attemptCatch(c, with: tier)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            throwing = false
             if success {
-                dex.catchCreature(creature)
+                dex.catchCreature(c)
                 confettiID = UUID()
                 showConfetti = true
+                statusText = "\(c.name.uppercased()) was caught!"
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
-                    revealCard = creature
+                    revealCard = c
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
                     showConfetti = false
                 }
+            } else {
+                ranAway = true
+                statusText = "\(c.name.uppercased()) broke free!"
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+                    ranAway = false
+                    advanceToNext()
+                }
             }
         }
+    }
+
+    private func advanceToNext() {
+        statusText = ""
+        ranAway = false
+        if currentIndex + 1 < focus.pendingSpawns.count {
+            currentIndex += 1
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                focus.dismissSafari()
+            }
+        }
+    }
+}
+
+// MARK: - Wild encounter (single creature, Gen-1 style)
+
+private struct WildEncounter: View {
+    let creature: Creature
+    let throwing: Bool
+    let ranAway: Bool
+    @State private var bob: CGFloat = 0
+    @State private var ballY: CGFloat = 0
+    @State private var wobble: CGFloat = 0
+    @State private var startBallY: CGFloat = 240
+
+    private var typeColor: Color {
+        switch creature.primary {
+        case .code: return Theme.mint
+        case .art: return Theme.pink
+        case .pixel: return Theme.yellow
+        case .doc: return Theme.blue
+        case .sound: return Theme.magenta
+        case .sun, .spark: return Theme.yellow
+        case .moon, .glitch, .spirit: return Theme.magenta
+        case .dream, .storm: return Theme.blue
+        case .caffeine: return Theme.pink
+        default: return Theme.mint
+        }
+    }
+
+    var body: some View {
+        ZStack {
+            // Creature standing on grass platform, centered
+            VStack(spacing: 0) {
+                Spacer().frame(height: 30)
+                Spacer()
+                PixelArt(
+                    grid: Sprites.forCreature(id: creature.id),
+                    scale: 6,
+                    glowColor: typeColor.opacity(0.75),
+                    glowRadius: 18
+                )
+                .offset(y: bob)
+                .opacity(throwing ? 0.55 : (ranAway ? 0 : 1))
+                .scaleEffect(ranAway ? 0.7 : 1)
+                .onAppear {
+                    bob = 0
+                    withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
+                        bob = -8
+                    }
+                }
+                GrassPlatform()
+                    .frame(width: 130, height: 30)
+                    .offset(y: -4)
+                Spacer().frame(height: 80)
+            }
+
+            // Pokeball arc when thrown
+            if throwing {
+                Circle()
+                    .fill(LinearGradient(colors: [.white, typeColor], startPoint: .top, endPoint: .bottom))
+                    .frame(width: 22, height: 22)
+                    .overlay(Circle().strokeBorder(.white, lineWidth: 1.5))
+                    .overlay(
+                        Rectangle().fill(Color(hex: "06010f").opacity(0.4)).frame(height: 2)
+                    )
+                    .offset(x: wobble, y: ballY)
+                    .onAppear {
+                        ballY = startBallY
+                        wobble = 0
+                        withAnimation(.timingCurve(0.3, 0.0, 0.6, 1.0, duration: 0.5)) {
+                            ballY = -20
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
+                            withAnimation(.spring(response: 0.18, dampingFraction: 0.4).repeatCount(3, autoreverses: true)) {
+                                wobble = 10
+                            }
+                        }
+                    }
+            }
+        }
+    }
+}
+
+// MARK: - Gen-1 dialog box
+
+private struct Gen1DialogBox: View {
+    let statusText: String
+    let creature: Creature?
+    let canThrow: Bool
+    let ballCount: Int
+    let onThrow: () -> Void
+    let onRun: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // Status text line + (optional) type pill
+            HStack(alignment: .center, spacing: 8) {
+                Text(statusText)
+                    .font(.system(size: 11, weight: .black, design: .monospaced))
+                    .foregroundStyle(Color(hex: "06010f"))
+                    .lineLimit(2)
+                Spacer()
+                if let c = creature {
+                    Text("HP")
+                        .font(.system(size: 8, weight: .black, design: .monospaced))
+                        .foregroundStyle(Color(hex: "06010f"))
+                    // HP indicator (rarity-based: more red = harder catch)
+                    HPIndicator(rarity: c.rarity)
+                }
+            }
+
+            // 2x2 action button grid
+            HStack(spacing: 6) {
+                actionButton(label: "THROW BALL", subtitle: "×\(ballCount)", icon: "◉",
+                             enabled: canThrow, action: onThrow)
+                actionButton(label: "RUN", subtitle: "skip", icon: "→",
+                             enabled: creature != nil, action: onRun)
+            }
+        }
+        .padding(10)
+        .background(
+            Color(hex: "fff7df")
+                .overlay(
+                    // Subtle paper texture via gradient
+                    LinearGradient(colors: [Color.white.opacity(0.4), .clear],
+                                   startPoint: .top, endPoint: .bottom)
+                )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            // Double border: thick black, thin inner
+            RoundedRectangle(cornerRadius: 8)
+                .strokeBorder(Color(hex: "06010f"), lineWidth: 3)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .strokeBorder(Color(hex: "06010f").opacity(0.15), lineWidth: 1)
+                        .padding(2)
+                )
+        )
+    }
+
+    private func actionButton(label: String, subtitle: String, icon: String,
+                              enabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Text(icon)
+                    .font(.system(size: 14, weight: .black))
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(label)
+                        .font(.system(size: 11, weight: .black, design: .monospaced))
+                    Text(subtitle)
+                        .font(.system(size: 8, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Color(hex: "06010f").opacity(0.5))
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 10).padding(.vertical, 7)
+            .background(Color.white, in: RoundedRectangle(cornerRadius: 4))
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .strokeBorder(Color(hex: "06010f"), lineWidth: 2)
+            )
+            .foregroundStyle(enabled ? Color(hex: "06010f") : Color(hex: "06010f").opacity(0.4))
+        }
+        .disabled(!enabled)
+        .buttonStyle(.plain)
+    }
+}
+
+private struct HPIndicator: View {
+    let rarity: Rarity
+    private var pct: CGFloat {
+        switch rarity {
+        case .common: return 0.85
+        case .uncommon: return 0.65
+        case .rare: return 0.45
+        case .legendary: return 0.22
+        case .mythic: return 0.10
+        }
+    }
+    private var color: Color {
+        pct > 0.5 ? Theme.mint : (pct > 0.25 ? Theme.yellow : Theme.pink)
+    }
+    var body: some View {
+        ZStack(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(Color(hex: "06010f").opacity(0.18))
+                .frame(width: 50, height: 8)
+            RoundedRectangle(cornerRadius: 2)
+                .fill(color)
+                .frame(width: 50 * pct, height: 8)
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: 2)
+                .strokeBorder(Color(hex: "06010f"), lineWidth: 1)
+                .frame(width: 50, height: 8)
+        )
     }
 }
 
