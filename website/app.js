@@ -1,74 +1,7 @@
-/* FocusDex — promo site interactions
-   Download gate (3-second hold) · smooth scroll · scroll reveals ·
-   count-up numbers · 3D card tilt · orb parallax · Notchy easter egg */
+/* FocusDex — promo site interactions (gate logic lives inline in index.html)
+   Smooth scroll · scroll reveals · count-up numbers · 3D tilt · orb parallax */
 (function () {
   'use strict';
-
-  // ─── Download gate (3-second hold + Open Anyway warning) ─────────────
-  const gate = document.getElementById('dlGate');
-  const gateClose = document.getElementById('dlGateClose');
-  const gateConfirm = document.getElementById('dlGateConfirm');
-  const gateText = gateConfirm && gateConfirm.querySelector('.dl-gate-btn-text');
-  let gateTimer = null;
-  let gateHref = '';
-
-  function openGate(href) {
-    if (!gate) return;
-    gateHref = href || '#';
-    gate.removeAttribute('hidden');
-    gateConfirm.setAttribute('data-locked', 'true');
-    gateConfirm.setAttribute('href', '#');
-    let remaining = 3;
-    gateText.textContent = 'Read above (' + remaining + 's)…';
-    clearInterval(gateTimer);
-    gateTimer = setInterval(function () {
-      remaining--;
-      if (remaining > 0) {
-        gateText.textContent = 'Read above (' + remaining + 's)…';
-      } else {
-        clearInterval(gateTimer);
-        gateConfirm.removeAttribute('data-locked');
-        gateConfirm.setAttribute('href', gateHref);
-        gateText.textContent = '↓ Download FocusDex.dmg';
-      }
-    }, 1000);
-  }
-
-  function closeGate() {
-    if (!gate) return;
-    gate.setAttribute('hidden', '');
-    clearInterval(gateTimer);
-    gateConfirm.setAttribute('data-locked', 'true');
-    gateConfirm.setAttribute('href', '#');
-    gateText.textContent = 'Read above (3s)…';
-  }
-
-  document.querySelectorAll('[data-download-trigger]').forEach(function (link) {
-    link.addEventListener('click', function (e) {
-      e.preventDefault();
-      openGate(link.getAttribute('href'));
-    });
-  });
-
-  if (gateConfirm) {
-    gateConfirm.addEventListener('click', function (e) {
-      if (gateConfirm.getAttribute('data-locked') === 'true') {
-        e.preventDefault();
-        return;
-      }
-      // Let the <a> navigate the href, then auto-close the modal.
-      setTimeout(closeGate, 600);
-    });
-  }
-  if (gateClose) gateClose.addEventListener('click', closeGate);
-  if (gate) {
-    gate.addEventListener('click', function (e) {
-      if (e.target === gate) closeGate();
-    });
-  }
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && gate && !gate.hasAttribute('hidden')) closeGate();
-  });
 
   // ─── Smooth scroll for #anchor links ────────────────────────────────
   document.querySelectorAll('a[href^="#"]').forEach(function (a) {

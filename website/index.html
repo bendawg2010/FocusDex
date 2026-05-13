@@ -289,7 +289,92 @@
   </div>
 </div>
 
-<script src="pixel-art.js"></script>
-<script src="app.js"></script>
+<script>
+// Inline download gate — no external-file caching, no DOM-load races.
+// Runs immediately after the modal HTML is parsed.
+(function () {
+  'use strict';
+  var gate = document.getElementById('dlGate');
+  var closeBtn = document.getElementById('dlGateClose');
+  var confirmBtn = document.getElementById('dlGateConfirm');
+  if (!gate || !closeBtn || !confirmBtn) {
+    console.warn('[FocusDex gate] missing DOM elements', { gate: !!gate, closeBtn: !!closeBtn, confirmBtn: !!confirmBtn });
+    return;
+  }
+  var confirmText = confirmBtn.querySelector('.dl-gate-btn-text');
+  if (!confirmText) {
+    console.warn('[FocusDex gate] missing .dl-gate-btn-text');
+    return;
+  }
+  var countdownTimer = null;
+  var pendingHref = '';
+
+  function startCountdown() {
+    var remaining = 3;
+    confirmBtn.setAttribute('data-locked', 'true');
+    confirmText.textContent = 'Read above (' + remaining + 's)...';
+    if (countdownTimer) clearInterval(countdownTimer);
+    countdownTimer = setInterval(function () {
+      remaining--;
+      console.log('[FocusDex gate] tick', remaining);
+      if (remaining > 0) {
+        confirmText.textContent = 'Read above (' + remaining + 's)...';
+      } else {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+        confirmBtn.removeAttribute('data-locked');
+        confirmBtn.setAttribute('href', pendingHref);
+        confirmText.textContent = '↓ Download FocusDex.dmg';
+      }
+    }, 1000);
+  }
+
+  function openGate(href) {
+    console.log('[FocusDex gate] opening for', href);
+    pendingHref = href || '#';
+    gate.removeAttribute('hidden');
+    confirmBtn.setAttribute('href', '#');
+    startCountdown();
+  }
+
+  function closeGate() {
+    console.log('[FocusDex gate] closing');
+    gate.setAttribute('hidden', '');
+    if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+    confirmBtn.setAttribute('data-locked', 'true');
+    confirmBtn.setAttribute('href', '#');
+    confirmText.textContent = 'Read above (3s)...';
+  }
+
+  // Bind every download trigger
+  var triggers = document.querySelectorAll('[data-download-trigger]');
+  console.log('[FocusDex gate] found', triggers.length, 'triggers');
+  triggers.forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      openGate(link.getAttribute('href'));
+    });
+  });
+
+  confirmBtn.addEventListener('click', function (e) {
+    if (confirmBtn.getAttribute('data-locked') === 'true') {
+      e.preventDefault();
+      return;
+    }
+    setTimeout(closeGate, 600);
+  });
+
+  closeBtn.addEventListener('click', function (e) { e.preventDefault(); closeGate(); });
+  gate.addEventListener('click', function (e) {
+    if (e.target === gate) closeGate();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !gate.hasAttribute('hidden')) closeGate();
+  });
+})();
+</script>
+
+<script src="pixel-art.js?v=3"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
