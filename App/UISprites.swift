@@ -274,6 +274,7 @@ struct DexCellSprite: View {
             PixelArt(
                 grid: Sprites.forCreature(id: creature.id),
                 scale: 3,
+                palette: Sprites.paletteFor(creature: creature),
                 glowColor: typeColor.opacity(0.6),
                 glowRadius: 8
             )

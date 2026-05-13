@@ -839,6 +839,7 @@ private struct WildEncounter: View {
                         PixelArt(
                             grid: Sprites.forCreature(id: creature.id),
                             scale: 5,
+                            palette: Sprites.paletteFor(creature: creature),
                             glowColor: typeColor.opacity(0.5),
                             glowRadius: 10
                         )
