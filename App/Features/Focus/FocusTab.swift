@@ -478,10 +478,20 @@ private struct SafariView: View {
         return "..."
     }
 
-    private func triggerEncounter() {
+    private func triggerEncounter(tileCode: Int) {
         guard !spawnQueue.isEmpty else { return }
-        let next = spawnQueue.removeFirst()
-        current = next
+        spawnQueue.removeFirst()
+        let rarities: [Rarity] = {
+            switch tileCode {
+            case 8:  return [.rare]
+            case 9:  return [.legendary]
+            case 10: return [.mythic]
+            default: return [.common, .uncommon]
+            }
+        }()
+        let pool = Creature.all.filter { rarities.contains($0.rarity) }
+        guard let pick = (pool.randomElement() ?? Creature.all.randomElement()) else { return }
+        current = pick
         statusText = ""
         ranAway = false
         throwing = false
@@ -548,22 +558,24 @@ private struct SafariView: View {
 // MARK: - Overworld (walk-around tile map, Gen-1 style)
 
 /// Tile types in the overworld map.
-/// 0 = grass · 1 = tall grass (encounter) · 2 = tree · 3 = rock · 4 = path
-/// 5 = water (impassable) · 6 = flowers (decorative, walkable) · 7 = sign (walkable)
+/// 0 = grass · 1 = tall grass (common, 22%) · 2 = tree · 3 = rock · 4 = path
+/// 5 = water · 6 = flowers · 7 = sign
+/// 8 = rare grass (purple-green, 30%) · 9 = legendary grass (navy, 40%) · 10 = mythic shrine (near-black, 60%)
 private let OVERWORLD_MAP: [[Int]] = [
-    [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
-    [2,0,6,0,1,1,1,1,0,0,5,5,5,0,2],
-    [2,0,0,0,1,1,1,0,0,0,5,5,5,5,2],
-    [2,7,4,4,4,4,0,0,3,0,0,5,5,0,2],
-    [2,0,0,0,0,4,4,4,4,4,4,4,0,0,2],
-    [2,1,1,0,0,0,0,1,1,0,0,4,0,6,2],
-    [2,1,1,6,0,3,0,1,1,1,0,4,4,4,2],
-    [2,0,0,0,0,0,0,1,1,1,0,0,0,7,2],
-    [2,0,4,4,4,4,4,4,0,0,3,0,1,1,2],
-    [2,6,4,0,0,0,0,4,4,4,4,4,1,1,2],
-    [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+    [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+    [2,0,1,1,0,0,2,2,2,8,8,8,8,8,0,2],
+    [2,1,1,1,0,4,4,0,0,8,8,8,8,8,0,2],
+    [2,1,1,0,0,4,0,0,4,4,4,8,8,8,0,2],
+    [2,0,0,0,0,4,0,0,4,0,0,0,4,4,4,2],
+    [2,6,0,0,0,4,0,3,4,0,0,0,0,0,4,2],
+    [2,0,0,0,0,4,4,4,4,0,0,0,2,2,4,2],
+    [2,0,0,0,0,0,0,0,0,0,2,2,10,2,4,2],
+    [2,2,2,2,4,4,4,4,0,0,2,2,0,2,4,2],
+    [2,9,9,9,4,0,0,0,0,0,0,0,0,0,4,2],
+    [2,9,9,9,9,9,0,0,0,0,6,0,0,0,0,2],
+    [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
 ]
-private let TILE_SIZE: CGFloat = 30
+private let TILE_SIZE: CGFloat = 22
 
 /// Trainer/player sprite (16×16, designed to read as a small explorer).
 private let TRAINER_SPRITE: [String] = [
@@ -586,10 +598,10 @@ private let TRAINER_SPRITE: [String] = [
 ]
 
 private struct OverworldView: View {
-    let onEncounter: () -> Void
+    let onEncounter: (Int) -> Void
     let onLeave: () -> Void
 
-    @State private var px: Int = 5
+    @State private var px: Int = 3
     @State private var py: Int = 4
     @State private var facing: Direction = .down
     @State private var monitor: Any? = nil
@@ -626,8 +638,14 @@ private struct OverworldView: View {
                 .animation(.easeOut(duration: 0.14), value: px)
                 .animation(.easeOut(duration: 0.14), value: py)
 
-            // Bottom hint overlay
+            // Bottom hint overlay + upper-right zone legend
             VStack {
+                HStack {
+                    Spacer()
+                    ZoneLegend()
+                        .padding(.trailing, 6)
+                        .padding(.top, 6)
+                }
                 Spacer()
                 HStack {
                     Text("← → ↑ ↓  WALK    Q  LEAVE")
@@ -672,22 +690,30 @@ private struct OverworldView: View {
         let ny = py + dy
         guard ny >= 0, ny < rows, nx >= 0, nx < cols else { return }
         let tile = OVERWORLD_MAP[ny][nx]
-        // 2 = tree, 3 = rock — impassable
-        guard tile != 2 && tile != 3 else { return }
+        // 2 = tree, 3 = rock, 5 = water — impassable
+        guard tile != 2 && tile != 3 && tile != 5 else { return }
         px = nx; py = ny
         facing = newFacing
         stepCount += 1
-        // Tall grass: rustle and roll for encounter
-        if tile == 1 {
+        // Encounter tiles: rustle and roll
+        let encounterRate: Double = {
+            switch tile {
+            case 1:  return 0.22
+            case 8:  return 0.30
+            case 9:  return 0.40
+            case 10: return 0.60
+            default: return 0
+            }
+        }()
+        if encounterRate > 0 {
             grassRustle = (nx, ny)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 if grassRustle?.0 == nx && grassRustle?.1 == ny { grassRustle = nil }
             }
-            // 22% chance per step into tall grass
-            if Double.random(in: 0...1) < 0.22 {
+            if Double.random(in: 0...1) < encounterRate {
                 Haptics.tick()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                    onEncounter()
+                    onEncounter(tile)
                 }
             }
         }
@@ -753,6 +779,56 @@ private struct TileMapCanvas: View {
                 ctx.fill(Path(CGRect(x: rect.minX + CGFloat(x), y: rect.minY + CGFloat(y), width: 1, height: 1)),
                          with: .color(dark))
             }
+        case 8:
+            // Rare grass — dark purple-green with magenta sparkles
+            ctx.fill(Path(rect), with: .color(Color(hex: "3a4a35")))
+            let dark = Color(hex: "26301f")
+            for (x, y) in [(4, 4), (12, 6), (8, 14), (16, 16)] {
+                ctx.fill(Path(CGRect(x: rect.minX + CGFloat(x), y: rect.minY + CGFloat(y), width: 2, height: 3)),
+                         with: .color(dark))
+            }
+            let sparkle = Color(hex: "ff4da6")
+            for (x, y) in [(6, 9), (15, 5), (10, 17), (4, 18)] {
+                ctx.fill(Path(CGRect(x: rect.minX + CGFloat(x), y: rect.minY + CGFloat(y), width: 1, height: 1)),
+                         with: .color(sparkle))
+            }
+        case 9:
+            // Legendary grass — deep navy with gold stars
+            ctx.fill(Path(rect), with: .color(Color(hex: "0e1845")))
+            let dark = Color(hex: "06091f")
+            for (x, y) in [(5, 5), (14, 8), (9, 15)] {
+                ctx.fill(Path(CGRect(x: rect.minX + CGFloat(x), y: rect.minY + CGFloat(y), width: 2, height: 3)),
+                         with: .color(dark))
+            }
+            let gold = Color(hex: "ffd966")
+            // Cross-pattern stars
+            for (cx, cy) in [(7, 7), (14, 14), (4, 16)] {
+                ctx.fill(Path(CGRect(x: rect.minX + CGFloat(cx), y: rect.minY + CGFloat(cy), width: 1, height: 1)),
+                         with: .color(gold))
+                ctx.fill(Path(CGRect(x: rect.minX + CGFloat(cx - 1), y: rect.minY + CGFloat(cy), width: 1, height: 1)),
+                         with: .color(gold))
+                ctx.fill(Path(CGRect(x: rect.minX + CGFloat(cx + 1), y: rect.minY + CGFloat(cy), width: 1, height: 1)),
+                         with: .color(gold))
+                ctx.fill(Path(CGRect(x: rect.minX + CGFloat(cx), y: rect.minY + CGFloat(cy - 1), width: 1, height: 1)),
+                         with: .color(gold))
+                ctx.fill(Path(CGRect(x: rect.minX + CGFloat(cx), y: rect.minY + CGFloat(cy + 1), width: 1, height: 1)),
+                         with: .color(gold))
+            }
+        case 10:
+            // Mythic shrine — near-black with rainbow specks
+            ctx.fill(Path(rect), with: .color(Color(hex: "0a0510")))
+            // Diagonal shrine pillar hint
+            let pillar = Color(hex: "1a0f24")
+            ctx.fill(Path(CGRect(x: rect.minX + 8, y: rect.minY + 4, width: 4, height: rect.height - 8)),
+                     with: .color(pillar))
+            let specks: [(Int, Int, String)] = [
+                (3, 4, "ff6b6b"), (15, 5, "ffd966"), (5, 11, "6bff8c"),
+                (16, 13, "6bd6ff"), (10, 17, "d96bff"), (4, 16, "ff6bd6"),
+            ]
+            for (x, y, hex) in specks {
+                ctx.fill(Path(CGRect(x: rect.minX + CGFloat(x), y: rect.minY + CGFloat(y), width: 1, height: 1)),
+                         with: .color(Color(hex: hex)))
+            }
         default:
             // Plain grass
             ctx.fill(Path(rect), with: .color(Color(hex: "7fc97f")))
@@ -761,6 +837,27 @@ private struct TileMapCanvas: View {
                      with: .color(Color(hex: "5fa75f")))
             ctx.fill(Path(CGRect(x: rect.minX + 18, y: rect.minY + 20, width: 1, height: 1)),
                      with: .color(Color(hex: "5fa75f")))
+        }
+    }
+}
+
+private struct ZoneLegend: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            row("🌿", "COMMON")
+            row("🌸", "RARE")
+            row("⭐", "LEGEND")
+            row("💎", "MYTHIC")
+        }
+        .padding(6)
+        .background(Color(hex: "fff7df"))
+        .overlay(Rectangle().strokeBorder(Color(hex: "06010f"), lineWidth: 2))
+        .foregroundStyle(Color(hex: "06010f"))
+    }
+    private func row(_ emoji: String, _ label: String) -> some View {
+        HStack(spacing: 4) {
+            Text(emoji).font(.system(size: 10))
+            Text(label).font(.system(size: 8, weight: .black, design: .monospaced))
         }
     }
 }
