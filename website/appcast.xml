@@ -5,6 +5,27 @@
     <description>Auto-update feed for FocusDex.</description>
     <language>en</language>
     <link>https://focusdex.pages.dev/</link>
-    <!-- v1.0 has not shipped yet. When it does, release.sh appends a new <item> here. -->
+
+    <item>
+      <title>v1.0.0 — Catch your year of work</title>
+      <pubDate>Tue, 12 May 2026 21:00:00 +0000</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[
+        <h3>FocusDex v1.0 — out now</h3>
+        <ul>
+          <li><strong>147 creatures designed</strong> across 13 families (starters, time-of-day, app-context, weather, legendaries, food, meetings, brain rot, sleep, seasonal, mythicals, crossover, regional).</li>
+          <li><strong>Catch minigame in Safari Mode</strong> — playable anytime, with or without a focus session.</li>
+          <li><strong>Focus timer earns Pokéballs in real time</strong> — 5min = Focus Ball, 25min = Great, 90min = Ultra, 8hr = Master.</li>
+          <li><strong>Onboarding starter selection</strong> — pick Codesprite, Inkling, or Pixibrush.</li>
+          <li><strong>Full persistence</strong> — pokeballs, streak, and dex survive quits and reboots.</li>
+          <li><strong>Polish:</strong> live menubar countdown, sound effects, haptics, right-click context menu, keyboard shortcuts (⌘N start, ⌘. stop, ⌘G catch).</li>
+        </ul>
+      ]]></description>
+      <enclosure url="https://github.com/bendawg2010/FocusDex/releases/download/v1.0.0/FocusDex.dmg"
+                 length="433798"
+                 type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
