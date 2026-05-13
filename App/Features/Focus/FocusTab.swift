@@ -549,16 +549,19 @@ private struct SafariView: View {
 
 /// Tile types in the overworld map.
 /// 0 = grass · 1 = tall grass (encounter) · 2 = tree · 3 = rock · 4 = path
+/// 5 = water (impassable) · 6 = flowers (decorative, walkable) · 7 = sign (walkable)
 private let OVERWORLD_MAP: [[Int]] = [
-    [0,2,0,1,1,1,0,0,0,2,0],
-    [2,0,0,1,1,0,0,1,1,0,0],
-    [0,0,4,4,4,4,0,1,1,1,0],
-    [0,0,4,0,0,4,4,4,0,0,2],
-    [0,1,4,0,0,0,0,4,4,4,4],  // path running through
-    [0,1,4,0,3,0,0,0,0,1,0],
-    [2,0,4,4,0,0,1,1,0,1,1],
-    [0,1,1,4,0,0,1,1,1,0,0],
-    [0,1,1,0,0,2,0,1,0,0,2],
+    [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+    [2,0,6,0,1,1,1,1,0,0,5,5,5,0,2],
+    [2,0,0,0,1,1,1,0,0,0,5,5,5,5,2],
+    [2,7,4,4,4,4,0,0,3,0,0,5,5,0,2],
+    [2,0,0,0,0,4,4,4,4,4,4,4,0,0,2],
+    [2,1,1,0,0,0,0,1,1,0,0,4,0,6,2],
+    [2,1,1,6,0,3,0,1,1,1,0,4,4,4,2],
+    [2,0,0,0,0,0,0,1,1,1,0,0,0,7,2],
+    [2,0,4,4,4,4,4,4,0,0,3,0,1,1,2],
+    [2,6,4,0,0,0,0,4,4,4,4,4,1,1,2],
+    [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
 ]
 private let TILE_SIZE: CGFloat = 30
 
@@ -1553,6 +1556,7 @@ private struct CatchRevealCard: View {
                 PixelArt(
                     grid: Sprites.forCreature(id: creature.id),
                     scale: 6,
+                    palette: Sprites.paletteFor(creature: creature),
                     glowColor: Theme.mint.opacity(0.8),
                     glowRadius: 22
                 )

@@ -21,6 +21,8 @@ struct BattleSceneView: View {
     @State private var opponentBob: CGFloat = 0
     @State private var hoveredMove: Int? = nil
     @State private var isLocked: Bool = false
+    @State private var showIntro: Bool = true
+    @State private var introPulse: Double = 0.6
 
     private let maxHP: Int = 100
     private let playerLevel: Int = 12
@@ -91,6 +93,24 @@ struct BattleSceneView: View {
                 .opacity(flashOpacity)
                 .allowsHitTesting(false)
                 .ignoresSafeArea()
+
+            if showIntro {
+                VStack {
+                    Text("WILD \(opponent.name.uppercased()) APPEARED!")
+                        .font(.system(size: 12, weight: .black, design: .monospaced))
+                        .kerning(1.2)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .background(Capsule().fill(Color.black.opacity(0.65)))
+                        .overlay(Capsule().strokeBorder(Theme.yellow.opacity(0.7), lineWidth: 1))
+                        .shadow(color: Theme.yellow.opacity(0.5), radius: 6)
+                        .opacity(introPulse)
+                        .padding(.top, 6)
+                    Spacer()
+                }
+                .allowsHitTesting(false)
+                .transition(.opacity)
+            }
         }
         .frame(width: 440, height: 560)
         .clipShape(RoundedRectangle(cornerRadius: 18))
@@ -159,7 +179,9 @@ struct BattleSceneView: View {
                     .fill(RadialGradient(colors: [Theme.magenta.opacity(0.5), .clear],
                                          center: .center, startRadius: 0, endRadius: 60))
                     .frame(width: 130, height: 32).offset(y: 38)
-                PixelArt(grid: Sprites.forCreature(id: opponent.id), scale: 4,
+                PixelArt(grid: Sprites.forCreature(id: opponent.id),
+                         scale: 4,
+                         palette: Sprites.paletteFor(creature: opponent),
                          glowColor: Theme.magenta.opacity(0.6), glowRadius: 10)
                     .offset(x: opponentShake, y: opponentBob)
             }
@@ -175,7 +197,9 @@ struct BattleSceneView: View {
                     .fill(RadialGradient(colors: [Theme.mint.opacity(0.4), .clear],
                                          center: .center, startRadius: 0, endRadius: 70))
                     .frame(width: 160, height: 36).offset(y: 56)
-                PixelArt(grid: Sprites.forCreature(id: playerCreature.id), scale: 6,
+                PixelArt(grid: Sprites.forCreature(id: playerCreature.id),
+                         scale: 6,
+                         palette: Sprites.paletteFor(creature: playerCreature),
                          glowColor: Theme.mint.opacity(0.65), glowRadius: 12)
                     .scaleEffect(x: -1, y: 1) // back-view feel via mirror
                     .offset(y: playerBob)

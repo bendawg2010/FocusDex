@@ -94,6 +94,7 @@ private struct StarterRow: View {
                     PixelArt(
                         grid: Sprites.forCreature(id: creature.id),
                         scale: 2.6,
+                        palette: Sprites.paletteFor(creature: creature),
                         glowColor: typeColor.opacity(0.7),
                         glowRadius: 12
                     )

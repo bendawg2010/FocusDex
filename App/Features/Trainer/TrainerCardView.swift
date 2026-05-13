@@ -149,12 +149,22 @@ struct TrainerCardView: View {
                 )
                 .frame(width: 140, height: 140)
 
-            PixelArt(
-                grid: starterSprite,
-                scale: 6,
-                glowColor: portraitGlow.opacity(0.7),
-                glowRadius: 14
-            )
+            if let c = Creature.startersAll.first(where: { $0.id == starterId }) {
+                PixelArt(
+                    grid: starterSprite,
+                    scale: 6,
+                    palette: Sprites.paletteFor(creature: c),
+                    glowColor: portraitGlow.opacity(0.7),
+                    glowRadius: 14
+                )
+            } else {
+                PixelArt(
+                    grid: starterSprite,
+                    scale: 6,
+                    glowColor: portraitGlow.opacity(0.7),
+                    glowRadius: 14
+                )
+            }
         }
         .frame(height: 170)
     }

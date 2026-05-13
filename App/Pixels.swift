@@ -315,6 +315,308 @@ enum Sprites {
         "................",
     ]
 
+    // ── Generic body shapes (used cycled across non-starter creatures) ──
+
+    /// Bird with outstretched wings.
+    static let birdling: [String] = [
+        "................",
+        ".......kk.......",
+        "......kmmk......",
+        "......kmmk......",
+        ".....kmwwmk.....",
+        ".kk..kmwwmk..kk.",
+        "kmmkkkmmmmkkkmmk",
+        "kmgmmmmggmmmmgmk",
+        ".kgmmgmmmmgmmgk.",
+        "..kgggmmmmgggk..",
+        "...kkmmmmmmkk...",
+        "....kmoomomk....",
+        ".....kooook.....",
+        "......kook......",
+        ".......kk.......",
+        "................",
+    ]
+
+    /// Floaty ghost with wavy bottom.
+    static let ghostling: [String] = [
+        "................",
+        "....kkkkkkkk....",
+        "...kmmmmmmmmk...",
+        "..kmmmmmmmmmmk..",
+        "..kmwwmmmmwwmk..",
+        ".kmwwwmmmmwwwmk.",
+        ".kmwkmmmmmmwkmk.",
+        ".kmmmmmqqmmmmmk.",
+        ".kmmmmqqqqmmmmk.",
+        ".kmmmmmmmmmmmmk.",
+        ".kmmgmmmmmmgmmk.",
+        ".kmggmmmmmmggmk.",
+        ".kmmkmmkkmmkmmk.",
+        ".km.kkmk.km.kk..",
+        ".k...kk...k.....",
+        "................",
+    ]
+
+    /// Slime blob with eyes on top.
+    static let slimon: [String] = [
+        "................",
+        "................",
+        "................",
+        ".....mmmmmm.....",
+        "....kmmwwmwk....",
+        "...kmwwwwwwmk...",
+        "..kmwkwwwkwwmk..",
+        "..kmmkkmmkkmmk..",
+        ".kmmmmmmmmmmmk..",
+        ".kmLmmmmmmmmmk..",
+        ".kmmmgmmgmmmmk..",
+        "kmmmmmmmmmmmmmk.",
+        "kmmmmmmmmmmmmmk.",
+        "kkmmmmmmmmmmmkk.",
+        ".kkkkkkkkkkkkk..",
+        "................",
+    ]
+
+    /// Coiled serpent with raised head.
+    static let serpenthe: [String] = [
+        "................",
+        ".....kkkk.......",
+        "....kmmmmk......",
+        "...kmwwmwwk.....",
+        "...kmwwmwwk.....",
+        "....kmmmmk......",
+        "....kmgggmk.....",
+        "...kmggmggmk....",
+        "..kmmmmmmmmmk...",
+        ".kmmgmmmmmmgmk..",
+        "kmmmmgmmmgmmmmk.",
+        "kmmmmmgmgmmmmmk.",
+        "kmmmmkkkkkmmmmk.",
+        ".kmmkkkmkkkmmk..",
+        "..kkmkkkkkmkk...",
+        "....kkkkkkk.....",
+    ]
+
+    /// Quadruped pup with four legs and tail.
+    static let pupling: [String] = [
+        "................",
+        "..kkk.....kkk...",
+        ".kmmmk...kmmmk..",
+        ".kmmmkkkkkmmmk..",
+        ".kmmmmmmmmmmmk..",
+        ".kmwwmmmmmmwwk..",
+        ".kmwwmgmmgmwwk..",
+        "kmmmmmmkkmmmmgk.",
+        "kmmmmqqkkqqmmmk.",
+        ".kmmmmmmmmmmmkg.",
+        ".kmmmmmmmmmmmk..",
+        ".kmmmkkkkkmmmk..",
+        ".kmmk.....kmmk..",
+        ".kmmk.....kmmk..",
+        ".kkkk.....kkkk..",
+        "................",
+    ]
+
+    /// Jellyfish: bell with dangling tentacles.
+    static let jellybub: [String] = [
+        "................",
+        ".....kkkkk......",
+        "....kmmmmmk.....",
+        "...kmLLmmmmk....",
+        "..kmmLLmmmmmk...",
+        ".kmmmmmmmmmmmk..",
+        ".kmwwmmmmwwmmk..",
+        ".kmwwmgggwwmmk..",
+        ".kmmmmmmmmmmmk..",
+        ".kkkkmkkmkkmkk..",
+        "..k.k.kk.k.k....",
+        "..g.k..k.k.g....",
+        "..k.g..k.g.k....",
+        "..g.k..g.k.g....",
+        "....g..k...k....",
+        ".......g........",
+    ]
+
+    /// Mushroom-mon: cap with spots and stubby body.
+    static let shrumon: [String] = [
+        "................",
+        "....kkkkkkk.....",
+        "...kggggggggk...",
+        "..kghhgwwhhggk..",
+        ".kggghwwhhgghgk.",
+        ".kghhgggghhghgk.",
+        "kggghhwwhhgghgk.",
+        "kgggggggggggggk.",
+        ".kkkkkkkkkkkkk..",
+        "....kmmmmmk.....",
+        "...kmwkwkwmk....",
+        "...kmwkwkwmk....",
+        "...kmmmmmmmk....",
+        "...kmmqqqmmk....",
+        "....kkkkkkk.....",
+        "................",
+    ]
+
+    /// Moth/butterfly with two big wings.
+    static let mothling: [String] = [
+        "................",
+        ".kkkk......kkkk.",
+        "kggggk....kggggk",
+        "kghhgmk..kmghhgk",
+        "kghhggmkkmgghhgk",
+        "kgghhggmmgghhggk",
+        ".kgghggkkggghgk.",
+        "..kkkmwwmmwwmkk.",
+        "....kmwwmmwwmk..",
+        "....kmmmkkmmmk..",
+        ".kkkkmmmmmmmmkkk",
+        "kggggmmgmgmmgggk",
+        "kgghggmmmmgghggk",
+        ".kgggmmmmmmgggk.",
+        "..kkkmmmmmmkkk..",
+        ".....kkkkkk.....",
+    ]
+
+    /// Rabbit with long ears.
+    static let bunmon: [String] = [
+        "................",
+        "...kk......kk...",
+        "..kmmk....kmmk..",
+        "..kmLk....kmLk..",
+        "..kmLk....kmLk..",
+        "..kmmk....kmmk..",
+        "..kmmkkkkkmmk...",
+        ".kmmmmmmmmmmmk..",
+        ".kmwwmmmmmmwwk..",
+        "kmmwwmmqqmmwwmk.",
+        "kmmmmmkmmkmmmmk.",
+        "kmmmgmmmmmgmmmk.",
+        ".kmmmmgmmgmmmmk.",
+        ".kmmkmmmmmmkmmk.",
+        "..kkkkkkkkkkkk..",
+        "...kk......kk...",
+    ]
+
+    /// Crab with side claws and legs.
+    static let crabmon: [String] = [
+        "................",
+        "..kk........kk..",
+        ".kmmk......kmmk.",
+        "kmmmmk....kmmmmk",
+        ".kmmkkkkkkkkmmk.",
+        "kkmkmmmmmmmmkmkk",
+        "kmkmmwwmmwwmmkmk",
+        "kkkmmwwmmwwmmkkk",
+        ".kmmmmmkkmmmmmk.",
+        "kkmmmgmmmmgmmmkk",
+        "kmkmmmgggggmmkmk",
+        "kkk.kmmmmmmmk.kk",
+        "k.k..kk.kkk..k.k",
+        "kk....k....k..kk",
+        "......k....k....",
+        ".....kk....kk...",
+    ]
+
+    /// Turtle with shelled back and head.
+    static let turtmon: [String] = [
+        "................",
+        "................",
+        "....kkkkkkk.....",
+        "...kgggggggk....",
+        "..kggghhhgggk...",
+        ".kgghgggggghgk..",
+        ".kgghggwwggghgk.",
+        "kgghhggwwgghhgk.",
+        "kggghggggggghgk.",
+        "kggghhgggghhggk.",
+        ".kggghhhhhhggk..",
+        ".kkmmkkkkkkmmk..",
+        "..kmwwmmmmwwmk..",
+        "..kmkkkmmkkkmk..",
+        "...kk.kmmk.kk...",
+        "..............k.",
+    ]
+
+    /// Dragonling with small wings and tail.
+    static let dragmon: [String] = [
+        "................",
+        ".....kkkkk......",
+        "....kmmmmmk.....",
+        "...kmwwmwwmk....",
+        "...kmwwmwwmk....",
+        "..kmmkkkkkmmk...",
+        ".kmgggmmmgggmk..",
+        "kmggmmmmmmmggmk.",
+        "kgmmmgggggmmmgk.",
+        ".kmmgggmgggmmk..",
+        ".kmmmmmgmmmmmk..",
+        "..kmmkkkkkmmkk..",
+        "..kmk.....kmmk..",
+        "..kmk......kmmk.",
+        "..kk........kmk.",
+        "..............k.",
+    ]
+
+    /// Cat with triangular ears and curled tail.
+    static let catling: [String] = [
+        "................",
+        "...k.k....k.k...",
+        "..kmkmk..kmkmk..",
+        "..kmmmkkkkmmmk..",
+        ".kmmmmmmmmmmmk..",
+        ".kmwwmmmmmmwwk..",
+        ".kmwwmmqqmmwwk..",
+        ".kmmmmmkkmmmmk..",
+        ".kmmmgmmmmgmmk..",
+        ".kmmmmmmmmmmmk..",
+        "kmmmmmmmmmmmmgk.",
+        "kmmmkkkkkkkmmmk.",
+        ".kmmk......kgmk.",
+        "..kmmk....kggk..",
+        "...kmmkkkkggk...",
+        "....kkkkkkkk....",
+    ]
+
+    /// Bug with antennae and segmented body.
+    static let buglet: [String] = [
+        "................",
+        ".....k....k.....",
+        ".....k....k.....",
+        "....kgk..kgk....",
+        "....kmkkkkmk....",
+        "...kmmmmmmmmk...",
+        "..kmwwmmmmwwmk..",
+        "..kmmmmmmmmmmk..",
+        ".kmmmmgmgmmmmmk.",
+        ".kmmgmmmmmgmmmk.",
+        ".kkkkkkkkkkkkkk.",
+        ".kmmgmmmmmgmmmk.",
+        ".kkkkkkkkkkkkkk.",
+        ".kmmmgmgmgmmmmk.",
+        "..kmkkmmmmkkmk..",
+        "...kk......kk...",
+    ]
+
+    /// Fish with fin and tail.
+    static let fishmon: [String] = [
+        "................",
+        "................",
+        "....kkkkkkk.....",
+        "...kmmmmmmmk....",
+        "..kmwwmmmmmmk...",
+        ".kmwwmmmmgmmmk..",
+        "kmmmmkmmmgmmmmkk",
+        "kmmmmmmmmgmmmmmk",
+        "kmmmmkmmmgmmmmmk",
+        ".kmmmmmmmgmmmmkk",
+        "..kmmmmmmmmmmk..",
+        "...kmmmmmmkkkk..",
+        "....kkkmmkkmmk..",
+        "......kmmkkmmk..",
+        ".......kmmmmk...",
+        "........kkkk....",
+    ]
+
     // ── Pokéballs ──
     static let focusBall: [String] = [
         "................",
@@ -431,16 +733,22 @@ enum Sprites {
         ".yyyyy..",
     ]
 
-    /// Sprite for a given creature dex id. For ids > 9, cycles through the
-    /// 9 hand-drawn body shapes so every creature gets a distinct silhouette.
+    /// Sprite for a given creature dex id. Starters (ids 1–9) use their
+    /// dedicated hand-drawn shapes; all other ids cycle through the full
+    /// set of body silhouettes so non-starter creatures look distinct.
     static func forCreature(id: Int) -> [String] {
         let shapes = [
             codesprite, codecrawler, codetitan,
             inkling, inkwarden, inkdragoon,
             pixibrush, brushwing, maestrix,
+            birdling, ghostling, slimon,
+            serpenthe, pupling, jellybub,
+            shrumon, mothling, bunmon,
+            crabmon, turtmon, dragmon,
+            catling, buglet, fishmon,
         ]
         if id >= 1 && id <= 9 { return shapes[id - 1] }
-        return shapes[abs(id) % 9]
+        return shapes[abs(id) % shapes.count]
     }
 
     /// Color triplet (light/main/dark) for a creature type — used to recolor

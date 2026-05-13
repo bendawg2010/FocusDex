@@ -3,12 +3,20 @@ import SwiftUI
 struct DexTab: View {
     @EnvironmentObject var dex: DexStore
     @State private var filter: CreatureType? = nil
+    @State private var searchText: String = ""
 
     private let columns = [GridItem(.adaptive(minimum: 84), spacing: 10)]
 
     var filtered: [Creature] {
-        guard let f = filter else { return dex.caught }
-        return dex.caught.filter { $0.primary == f || $0.secondary == f }
+        var base = dex.caught
+        if let f = filter {
+            base = base.filter { $0.primary == f || $0.secondary == f }
+        }
+        let q = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !q.isEmpty {
+            base = base.filter { $0.name.range(of: q, options: .caseInsensitive) != nil }
+        }
+        return base
     }
 
     var body: some View {
@@ -51,6 +59,9 @@ struct DexTab: View {
                 }
                 Spacer()
             } else {
+                SearchField(text: $searchText)
+                    .padding(.horizontal, 16)
+
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 6) {
                         FilterChip(label: "All", selected: filter == nil) { filter = nil }
@@ -79,6 +90,42 @@ struct DexTab: View {
     private var activeTypes: [CreatureType] {
         let s = Set(dex.caught.flatMap { [$0.primary, $0.secondary].compactMap { $0 } })
         return CreatureType.allCases.filter { s.contains($0) }
+    }
+}
+
+private struct SearchField: View {
+    @Binding var text: String
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(focused ? Theme.mint : Color.secondary)
+            TextField("", text: $text, prompt: Text("Search by name…").foregroundColor(.secondary))
+                .textFieldStyle(.plain)
+                .foregroundStyle(.white)
+                .tint(Theme.mint)
+                .focused($focused)
+                .autocorrectionDisabled(true)
+            if !text.isEmpty {
+                Button {
+                    text = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(8)
+        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(focused ? Theme.mint.opacity(0.6) : Color.white.opacity(0.08), lineWidth: 0.5)
+        )
+        .animation(.easeInOut(duration: 0.15), value: focused)
     }
 }
 
